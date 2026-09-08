@@ -1,6 +1,6 @@
 {
   "name": "memo-cabinet",
-  "version": "1.7.2",
+  "version": "1.7.3",
   "description": "서류철 탭 스타일 메모 데스크톱 위젯",
   "main": "main.js",
   "scripts": {

@@ -57,6 +57,16 @@ html, body {
   }
 }
 
+.tab.dragging {
+  opacity: 0.4;
+}
+.tab.drag-over-top {
+  box-shadow: 0 -3px 0 0 #b5652b, -2px 2px 8px rgba(0, 0, 0, 0.25);
+}
+.tab.drag-over-bottom {
+  box-shadow: 0 3px 0 0 #b5652b, -2px 2px 8px rgba(0, 0, 0, 0.25);
+}
+
 .tab-add {
   flex: 0 0 auto;
   height: 34px;

@@ -28,6 +28,24 @@
     return new Date().toISOString();
   }
 
+  let draggedFolderId = null;
+
+  function clearDragOverMarks() {
+    els.tabs.querySelectorAll('.tab').forEach((t) => t.classList.remove('drag-over-top', 'drag-over-bottom'));
+  }
+
+  function reorderFolders(sourceId, targetId, dropBefore) {
+    const sourceIndex = folders.findIndex((f) => f.id === sourceId);
+    if (sourceIndex === -1) return;
+    const [moved] = folders.splice(sourceIndex, 1);
+    let targetIndex = folders.findIndex((f) => f.id === targetId);
+    if (targetIndex === -1) { folders.push(moved); } else {
+      folders.splice(dropBefore ? targetIndex : targetIndex + 1, 0, moved);
+    }
+    renderTabs();
+    persist();
+  }
+
   function renderTabs() {
     els.tabs.innerHTML = '';
     folders.forEach((folder) => {
@@ -36,8 +54,43 @@
       tab.style.background = folder.color;
       tab.textContent = folder.title;
       tab.title = folder.title;
+      tab.draggable = true;
       tab.addEventListener('mouseenter', () => showFolder(folder.id));
       tab.addEventListener('click', () => window.api.openFolderInMain(folder.id));
+
+      // Tabs double as a reorderable list — native drag-and-drop, not the
+      // mousedown/mousemove scheme the drag-handle uses, since a real drag
+      // gesture already suppresses the subsequent click on its source
+      // element for free, so a plain click still opens the folder.
+      tab.addEventListener('dragstart', (e) => {
+        draggedFolderId = folder.id;
+        tab.classList.add('dragging');
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', folder.id);
+      });
+      tab.addEventListener('dragend', () => {
+        tab.classList.remove('dragging');
+        draggedFolderId = null;
+        clearDragOverMarks();
+      });
+      tab.addEventListener('dragover', (e) => {
+        if (!draggedFolderId || draggedFolderId === folder.id) return;
+        e.preventDefault();
+        const rect = tab.getBoundingClientRect();
+        const before = (e.clientY - rect.top) < rect.height / 2;
+        tab.classList.toggle('drag-over-top', before);
+        tab.classList.toggle('drag-over-bottom', !before);
+      });
+      tab.addEventListener('dragleave', () => {
+        tab.classList.remove('drag-over-top', 'drag-over-bottom');
+      });
+      tab.addEventListener('drop', (e) => {
+        e.preventDefault();
+        const before = tab.classList.contains('drag-over-top');
+        clearDragOverMarks();
+        if (!draggedFolderId || draggedFolderId === folder.id) return;
+        reorderFolders(draggedFolderId, folder.id, before);
+      });
       els.tabs.appendChild(tab);
     });
 
