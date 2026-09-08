@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self';" />
+<title>계산기</title>
+<link rel="stylesheet" href="calc.css" />
+</head>
+<body>
+  <div id="calc">
+    <div id="calcDisplay">
+      <div id="calcExpr" class="calc-expr"></div>
+      <div class="calc-result-row">
+        <div id="calcResult" class="calc-result">0</div>
+        <button id="calcCopyBtn" class="calc-copy-btn" title="결과 복사">📋</button>
+      </div>
+    </div>
+    <div id="calcMemory" class="calc-memory"></div>
+    <div class="calc-grid" id="calcGrid"></div>
+  </div>
+  <script src="calc.js"></script>
+</body>
+</html>

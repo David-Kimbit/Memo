@@ -1,0 +1,56 @@
+{
+  "name": "memo-cabinet",
+  "version": "1.7.2",
+  "description": "서류철 탭 스타일 메모 데스크톱 위젯",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --win nsis"
+  },
+  "build": {
+    "appId": "com.kdwikorea.memocabinet",
+    "productName": "메모함",
+    "publish": {
+      "provider": "github",
+      "owner": "David-Kimbit",
+      "repo": "Memo"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "renderer/**/*",
+      "assets/**/*"
+    ],
+    "directories": {
+      "output": "dist"
+    },
+    "win": {
+      "icon": "assets/icon.ico",
+      "signAndEditExecutable": false,
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "artifactName": "memo-cabinet-setup-${version}.${ext}",
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "deleteAppDataOnUninstall": false,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
+  },
+  "devDependencies": {
+    "electron": "^32.0.0",
+    "electron-builder": "^24.13.3",
+    "png-to-ico": "^2.1.8"
+  },
+  "dependencies": {
+    "electron-updater": "^6.8.9"
+  }
+}

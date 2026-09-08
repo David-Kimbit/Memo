@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'; img-src 'self' data:;" />
+<title>메모 위젯</title>
+<link rel="stylesheet" href="widget.css" />
+</head>
+<body>
+  <div id="widget">
+    <div id="panel" class="panel">
+      <div id="dragHandle" class="drag-handle" title="드래그해서 위치 이동">⋮⋮</div>
+      <div class="panel-header">
+        <span id="panelColorDot" class="color-dot"></span>
+        <input id="panelTitleInput" class="panel-title-input" maxlength="60" placeholder="제목" />
+        <button id="pinBtn" class="pin-btn" title="고정하면 마우스를 떼도 닫히지 않습니다">📌</button>
+      </div>
+      <div id="panelPageList" class="panel-page-list"></div>
+      <div id="panelBodyInput" class="panel-body-input" contenteditable="true" data-placeholder="내용을 입력하세요..."></div>
+      <div class="panel-footer">
+        <span id="panelSaveStatus" class="panel-save-status"></span>
+        <button id="panelDeleteBtn" class="panel-btn panel-btn-danger" title="이 폴더 삭제">🗑</button>
+        <button id="panelEditBtn" class="panel-btn">전체 편집 열기</button>
+      </div>
+    </div>
+    <div id="tabs" class="tabs"></div>
+  </div>
+  <script src="widget.js"></script>
+</body>
+</html>
