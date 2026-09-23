@@ -93,9 +93,51 @@
   // Page content is stored as HTML (rich text); previews/search need the
   // plain-text version so tags never leak into a summary line.
   const stripHtmlScratch = document.createElement('div');
+
+  // Bullet/number markers are pure CSS ::before content and a checkbox's
+  // checked state lives only in a DOM property — neither is part of
+  // textContent, so a plain strip silently dropped all three from every
+  // preview even though the note itself showed them fine.
+  function numberMarker(n, style) {
+    if (style === 'lower-alpha' || style === 'upper-alpha') {
+      let s = '';
+      let num = n;
+      while (num > 0) {
+        num--;
+        s = String.fromCharCode(97 + (num % 26)) + s;
+        num = Math.floor(num / 26);
+      }
+      return style === 'upper-alpha' ? s.toUpperCase() : s;
+    }
+    if (style === 'lower-roman') {
+      const romanMap = [[1000, 'm'], [900, 'cm'], [500, 'd'], [400, 'cd'], [100, 'c'], [90, 'xc'], [50, 'l'], [40, 'xl'], [10, 'x'], [9, 'ix'], [5, 'v'], [4, 'iv'], [1, 'i']];
+      let num = n;
+      let roman = '';
+      for (const [val, sym] of romanMap) {
+        while (num >= val) { roman += sym; num -= val; }
+      }
+      return roman;
+    }
+    return String(n);
+  }
+
   function stripHtml(html) {
     if (!html) return '';
     stripHtmlScratch.innerHTML = html;
+    let numberCounter = 0;
+    stripHtmlScratch.querySelectorAll('.chk-item, .list-bullet, .list-number').forEach((el) => {
+      let marker = '';
+      if (el.classList.contains('chk-item')) {
+        const checkbox = el.querySelector('input[type="checkbox"]');
+        marker = (checkbox && checkbox.checked) ? '☑ ' : '☐ ';
+      } else if (el.classList.contains('list-bullet')) {
+        marker = '• ';
+      } else if (el.classList.contains('list-number')) {
+        numberCounter++;
+        marker = numberMarker(numberCounter, el.dataset.numStyle) + '. ';
+      }
+      el.insertBefore(document.createTextNode(marker), el.firstChild);
+    });
     return stripHtmlScratch.textContent || '';
   }
 
