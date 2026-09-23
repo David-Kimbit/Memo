@@ -22,6 +22,9 @@
     panelEditBtn: document.getElementById('panelEditBtn'),
     panelDeleteBtn: document.getElementById('panelDeleteBtn'),
     pinBtn: document.getElementById('pinBtn'),
+    panelBulletBtn: document.getElementById('panelBulletBtn'),
+    panelItalicBtn: document.getElementById('panelItalicBtn'),
+    panelFontSelect: document.getElementById('panelFontSelect'),
   };
 
   function nowIso() {
@@ -254,6 +257,80 @@
     }
     e.preventDefault();
     document.execCommand('insertText', false, cd.getData('text/plain'));
+  });
+
+  // ---------- Quick formatting (bullet / italic / font) ----------
+
+  // Same reasoning as the main editor: a bullet toggle marks the current
+  // top-level line with a CSS class in place rather than running
+  // execCommand('insertUnorderedList'), which rebuilds the line into a real
+  // <ul><li> and visibly moves/merges it.
+  function getTopLevelBlock(node) {
+    while (node && node.parentNode !== els.panelBodyInput) node = node.parentNode;
+    return node && node.parentNode === els.panelBodyInput ? node : null;
+  }
+  function placeCaretAtStart(el) {
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    range.collapse(true);
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+  }
+  function toggleBullet() {
+    const sel = window.getSelection();
+    const anchor = sel.rangeCount ? sel.getRangeAt(0).startContainer : null;
+    let block = anchor ? getTopLevelBlock(anchor) : null;
+    if (!block) {
+      block = document.createElement('div');
+      block.innerHTML = '<br>';
+      els.panelBodyInput.appendChild(block);
+      placeCaretAtStart(block);
+    }
+    block.classList.toggle('list-bullet');
+    els.panelBodyInput.dispatchEvent(new Event('input'));
+  }
+
+  // A <select> steals focus when it opens, so the selection has to be saved
+  // beforehand and restored before acting on it, same as the main editor.
+  let savedRange = null;
+  function saveSelection() {
+    const sel = window.getSelection();
+    if (sel.rangeCount) savedRange = sel.getRangeAt(0).cloneRange();
+  }
+  function restoreSelection() {
+    if (!savedRange) return;
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(savedRange);
+  }
+
+  els.panelBulletBtn.addEventListener('mousedown', (e) => e.preventDefault());
+  els.panelBulletBtn.addEventListener('click', toggleBullet);
+
+  els.panelItalicBtn.addEventListener('mousedown', (e) => e.preventDefault());
+  els.panelItalicBtn.addEventListener('click', () => {
+    document.execCommand('italic', false, null);
+    els.panelBodyInput.dispatchEvent(new Event('input'));
+  });
+
+  els.panelFontSelect.addEventListener('mousedown', saveSelection);
+  els.panelFontSelect.addEventListener('focus', saveSelection);
+  els.panelFontSelect.addEventListener('change', () => {
+    if (!els.panelFontSelect.value) return;
+    restoreSelection();
+    document.execCommand('fontName', false, els.panelFontSelect.value);
+    els.panelBodyInput.dispatchEvent(new Event('input'));
+    els.panelFontSelect.value = '';
+  });
+
+  // Bold/italic/underline already have Chromium's built-in contenteditable
+  // shortcuts (Ctrl+B/I/U) — only the bullet toggle needs its own binding.
+  els.panelBodyInput.addEventListener('keydown', (e) => {
+    if (e.ctrlKey && e.shiftKey && e.key === '*') {
+      e.preventDefault();
+      toggleBullet();
+    }
   });
 
   // ---------- Hover reveal / click-through toggling ----------

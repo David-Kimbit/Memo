@@ -18,6 +18,16 @@
       <div id="panelPageList" class="panel-page-list"></div>
       <div id="panelBodyInput" class="panel-body-input" contenteditable="true" data-placeholder="내용을 입력하세요..."></div>
       <div class="panel-footer">
+        <div class="panel-mini-toolbar">
+          <button id="panelBulletBtn" class="mini-btn" title="글머리 기호 (Ctrl+Shift+8)">•</button>
+          <button id="panelItalicBtn" class="mini-btn" title="기울임 (Ctrl+I)"><i>I</i></button>
+          <select id="panelFontSelect" class="mini-select" title="글꼴">
+            <option value="">글꼴</option>
+            <option value="Malgun Gothic">맑은 고딕</option>
+            <option value="Gungsuh">궁서</option>
+            <option value="Batang">바탕</option>
+          </select>
+        </div>
         <span id="panelSaveStatus" class="panel-save-status"></span>
         <button id="panelDeleteBtn" class="panel-btn panel-btn-danger" title="이 폴더 삭제">🗑</button>
         <button id="panelEditBtn" class="panel-btn">전체 편집 열기</button>

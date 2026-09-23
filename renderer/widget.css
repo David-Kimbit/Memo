@@ -249,6 +249,50 @@ html, body {
   border: 1px solid #d9c9a8;
   padding: 3px 8px;
 }
+.panel-body-input .chk-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 5px;
+  margin: 2px 0;
+}
+.panel-body-input .chk-item input[type="checkbox"] {
+  margin-top: 3px;
+  flex: 0 0 auto;
+}
+.panel-body-input .chk-item span {
+  flex: 1;
+  min-width: 0;
+}
+.panel-body-input {
+  counter-reset: list-num;
+}
+.panel-body-input .list-bullet,
+.panel-body-input .list-number {
+  position: relative;
+  padding-left: 18px;
+}
+.panel-body-input .list-bullet::before {
+  content: "•";
+  position: absolute;
+  left: 4px;
+}
+.panel-body-input .list-number {
+  counter-increment: list-num;
+}
+.panel-body-input .list-number::before {
+  content: counter(list-num) ".";
+  position: absolute;
+  left: 0;
+}
+.panel-body-input .list-number[data-num-style="lower-alpha"]::before {
+  content: counter(list-num, lower-alpha) ".";
+}
+.panel-body-input .list-number[data-num-style="upper-alpha"]::before {
+  content: counter(list-num, upper-alpha) ".";
+}
+.panel-body-input .list-number[data-num-style="lower-roman"]::before {
+  content: counter(list-num, lower-roman) ".";
+}
 
 .panel-footer {
   flex: 0 0 auto;
@@ -258,6 +302,42 @@ html, body {
   padding-top: 8px;
   margin-top: 6px;
   border-top: 1px solid #e3d5b8;
+}
+
+.panel-mini-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 0 0 auto;
+}
+.mini-btn {
+  flex: 0 0 auto;
+  width: 22px;
+  height: 22px;
+  border: 1px solid #e3d5b8;
+  background: #fff;
+  border-radius: 5px;
+  font-size: 12px;
+  color: #4a3d2c;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+.mini-btn:hover {
+  background: #f4ede0;
+}
+.mini-select {
+  flex: 0 0 auto;
+  max-width: 64px;
+  height: 22px;
+  border: 1px solid #e3d5b8;
+  background: #fff;
+  border-radius: 5px;
+  font-size: 10.5px;
+  color: #4a3d2c;
+  padding: 0 2px;
 }
 
 .panel-save-status {
