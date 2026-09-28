@@ -935,6 +935,110 @@
     }
   });
 
+  // ---------- Configurable shortcuts (list actions) ----------
+
+  const SC = window.Shortcuts;
+  const shortcutActions = {
+    bullet: () => toggleLineList('list-bullet'),
+    number: () => els.numberBtn.click(),
+    checklist: () => insertChecklistItem(),
+  };
+
+  els.pageContentInput.addEventListener('keydown', (e) => {
+    if (e.isComposing || e.keyCode === 229) return;
+    const combo = SC.comboFromEvent(e);
+    if (!combo) return;
+    const map = SC.load();
+    const id = Object.keys(shortcutActions).find((k) => map[k] === combo);
+    if (!id) return;
+    e.preventDefault();
+    shortcutActions[id]();
+  });
+
+  function refreshShortcutTitles() {
+    const map = SC.load();
+    els.bulletBtn.title = '글머리 기호 (' + map.bullet + ')';
+    els.numberBtn.title = '번호 매기기 (' + map.number + ')';
+    els.checklistBtn.title = '체크리스트 (' + map.checklist + ')';
+  }
+  refreshShortcutTitles();
+
+  const shortcutOverlay = document.getElementById('shortcutOverlay');
+  const shortcutList = document.getElementById('shortcutList');
+  const shortcutMsg = document.getElementById('shortcutMsg');
+  let capturingId = null;
+
+  function renderShortcutList() {
+    const map = SC.load();
+    shortcutList.innerHTML = '';
+    SC.ACTIONS.forEach((a) => {
+      const row = document.createElement('div');
+      row.className = 'shortcut-row';
+      const label = document.createElement('span');
+      label.textContent = a.label;
+      const btn = document.createElement('button');
+      btn.className = 'btn shortcut-key';
+      btn.textContent = capturingId === a.id ? '키를 누르세요…' : map[a.id];
+      btn.addEventListener('click', () => {
+        capturingId = a.id;
+        shortcutMsg.textContent = 'Ctrl 또는 Alt를 포함한 조합을 누르세요 (Esc 취소)';
+        renderShortcutList();
+        btn.focus();
+      });
+      row.appendChild(label);
+      row.appendChild(btn);
+      shortcutList.appendChild(row);
+    });
+  }
+
+  function closeShortcutSettings() {
+    capturingId = null;
+    shortcutOverlay.hidden = true;
+    refreshShortcutTitles();
+  }
+
+  document.getElementById('shortcutBtn').addEventListener('click', () => {
+    shortcutMsg.textContent = '';
+    renderShortcutList();
+    shortcutOverlay.hidden = false;
+  });
+  document.getElementById('shortcutCloseBtn').addEventListener('click', closeShortcutSettings);
+  document.getElementById('shortcutResetBtn').addEventListener('click', () => {
+    SC.save({});
+    capturingId = null;
+    shortcutMsg.textContent = '기본값으로 되돌렸습니다';
+    renderShortcutList();
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (shortcutOverlay.hidden || !capturingId) return;
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.key === 'Escape') {
+      capturingId = null;
+      shortcutMsg.textContent = '';
+      renderShortcutList();
+      return;
+    }
+    const combo = SC.comboFromEvent(e);
+    if (!combo) return;
+    if (!SC.isAcceptable(combo)) {
+      shortcutMsg.textContent = 'Ctrl 또는 Alt를 포함해야 하고, Ctrl+B/I/U/Z/C/V 등은 쓸 수 없어요';
+      return;
+    }
+    const map = SC.load();
+    const clash = SC.ACTIONS.find((a) => a.id !== capturingId && map[a.id] === combo);
+    if (clash) {
+      shortcutMsg.textContent = '이미 "' + clash.label + '"에서 쓰는 조합이에요';
+      return;
+    }
+    map[capturingId] = combo;
+    SC.save(map);
+    capturingId = null;
+    shortcutMsg.textContent = '저장됨';
+    renderShortcutList();
+  }, true);
+
   // Tab in a contenteditable region normally moves focus to the next
   // focusable UI element instead of typing anything — here it inserts a
   // fixed indent instead, using non-breaking spaces so the browser doesn't

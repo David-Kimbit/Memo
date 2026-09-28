@@ -259,6 +259,26 @@ html, body {
   font-family: inherit;
 }
 
+.shortcut-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.shortcut-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13.5px;
+}
+
+.shortcut-key {
+  min-width: 150px;
+  font-family: Consolas, "Segoe UI", monospace;
+}
+
 .modal-actions {
   display: flex;
   align-items: center;

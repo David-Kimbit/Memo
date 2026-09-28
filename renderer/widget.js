@@ -305,6 +305,9 @@
     sel.addRange(savedRange);
   }
 
+  els.panelBulletBtn.addEventListener('mouseenter', () => {
+    if (window.Shortcuts) els.panelBulletBtn.title = '글머리 기호 (' + window.Shortcuts.load().bullet + ')';
+  });
   els.panelBulletBtn.addEventListener('mousedown', (e) => e.preventDefault());
   els.panelBulletBtn.addEventListener('click', toggleBullet);
 
@@ -325,9 +328,10 @@
   });
 
   // Bold/italic/underline already have Chromium's built-in contenteditable
-  // shortcuts (Ctrl+B/I/U) — only the bullet toggle needs its own binding.
+  // shortcuts (Ctrl+B/I/U) — only the bullet toggle needs its own binding,
+  // whose key is user-configurable from the main window's 단축키 settings.
   els.panelBodyInput.addEventListener('keydown', (e) => {
-    if (e.ctrlKey && e.shiftKey && e.key === '*') {
+    if (window.Shortcuts && window.Shortcuts.matches(e, 'bullet')) {
       e.preventDefault();
       toggleBullet();
     }

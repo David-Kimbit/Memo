@@ -12,6 +12,7 @@
       <h1 class="app-title">📂 메모함</h1>
       <div class="topbar-actions">
         <input id="searchInput" type="text" placeholder="제목·내용 검색" />
+        <button id="shortcutBtn" class="btn" title="단축키 설정">⌨ 단축키</button>
         <button id="calcBtn" class="btn" title="계산기">🧮 계산기</button>
         <button id="newFolderBtn" class="btn primary">+ 새 폴더</button>
       </div>
@@ -123,6 +124,18 @@
     </div>
   </div>
 
+  <div id="shortcutOverlay" class="modal-overlay" hidden>
+    <div class="modal-box">
+      <div class="modal-title">단축키 설정</div>
+      <div id="shortcutList" class="shortcut-list"></div>
+      <div id="shortcutMsg" class="modal-copy-status"></div>
+      <div class="modal-actions">
+        <button id="shortcutResetBtn" class="btn">기본값으로</button>
+        <button id="shortcutCloseBtn" class="btn primary">닫기</button>
+      </div>
+    </div>
+  </div>
+  <script src="shortcuts.js"></script>
   <script src="renderer.js"></script>
 </body>
 </html>
