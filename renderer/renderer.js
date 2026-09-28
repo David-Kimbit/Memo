@@ -381,6 +381,7 @@
     els.pageContentInput.innerHTML = page ? page.content || '' : '';
     els.pageTitleInput.disabled = !page;
     els.pageContentInput.contentEditable = page ? 'true' : 'false';
+    historyPageLoaded(folder.id + ':' + currentPageId);
     els.deletePageBtn.disabled = folder.pages.length <= 1;
     renderAttachments(page);
   }
@@ -628,9 +629,167 @@
   els.pageContentInput.addEventListener('mouseup', saveSelection);
   els.pageContentInput.addEventListener('keyup', saveSelection);
 
+  // ---------- Undo / redo ----------
+  //
+  // The browser's native undo only knows about edits it made itself
+  // (typing, execCommand). Bullet/number toggles, checklist rows and Tab
+  // indents change the DOM directly, so Ctrl+Z skipped them. This keeps its
+  // own snapshot history for the whole editor instead: typing is grouped
+  // until a short pause, and each toolbar/shortcut action (afterCommand) is
+  // its own step. Native undo is suppressed so the two never fight.
+
+  const HISTORY_LIMIT = 100;
+  const TYPING_GROUP_MS = 600;
+  const editHistory = {
+    undo: [],
+    redo: [],
+    baseline: '',   // content as of the last quiet moment
+    prevHtml: '',   // content as of the last input event
+    typing: false,
+    timer: null,
+    restoring: false,
+    key: null,
+  };
+
+  function getCaretOffset() {
+    const sel = window.getSelection();
+    if (!sel.rangeCount) return null;
+    const r = sel.getRangeAt(0);
+    if (!els.pageContentInput.contains(r.endContainer)) return null;
+    const pre = document.createRange();
+    pre.selectNodeContents(els.pageContentInput);
+    pre.setEnd(r.endContainer, r.endOffset);
+    return pre.toString().length;
+  }
+
+  function setCaretOffset(offset) {
+    const walker = document.createTreeWalker(els.pageContentInput, NodeFilter.SHOW_TEXT);
+    const range = document.createRange();
+    let acc = 0;
+    let node;
+    let placed = false;
+    while ((node = walker.nextNode())) {
+      const len = node.textContent.length;
+      if (offset !== null && acc + len >= offset) {
+        range.setStart(node, Math.max(0, offset - acc));
+        placed = true;
+        break;
+      }
+      acc += len;
+    }
+    if (!placed) {
+      range.selectNodeContents(els.pageContentInput);
+      range.collapse(false);
+    } else {
+      range.collapse(true);
+    }
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+  }
+
+  function historyPush(stack, html, caret) {
+    const top = stack[stack.length - 1];
+    if (top && top.html === html) return;
+    stack.push({ html, caret });
+    if (stack.length > HISTORY_LIMIT) stack.shift();
+  }
+
+  function historySync() {
+    clearTimeout(editHistory.timer);
+    editHistory.typing = false;
+    editHistory.baseline = els.pageContentInput.innerHTML;
+    editHistory.prevHtml = editHistory.baseline;
+  }
+
+  // Called after the editor is (re)filled from storage. A different page
+  // starts with a clean history; re-rendering the same page keeps it.
+  function historyPageLoaded(key) {
+    if (editHistory.key !== key) {
+      editHistory.key = key;
+      editHistory.undo = [];
+      editHistory.redo = [];
+    }
+    historySync();
+  }
+
+  els.pageContentInput.addEventListener('input', () => {
+    if (editHistory.restoring) return;
+    const current = els.pageContentInput.innerHTML;
+    if (!editHistory.typing && editHistory.baseline !== current) {
+      historyPush(editHistory.undo, editHistory.baseline, getCaretOffset());
+      editHistory.redo = [];
+      editHistory.typing = true;
+    }
+    editHistory.prevHtml = current;
+    clearTimeout(editHistory.timer);
+    editHistory.timer = setTimeout(() => {
+      editHistory.typing = false;
+      editHistory.baseline = els.pageContentInput.innerHTML;
+    }, TYPING_GROUP_MS);
+  });
+
+  // Toolbar/shortcut actions land here: make them a step of their own even
+  // if the user was typing a moment ago.
+  function historyStep() {
+    if (editHistory.typing) {
+      clearTimeout(editHistory.timer);
+      editHistory.typing = false;
+      editHistory.baseline = editHistory.prevHtml;
+    }
+    els.pageContentInput.dispatchEvent(new Event('input'));
+    clearTimeout(editHistory.timer);
+    editHistory.typing = false;
+    editHistory.baseline = els.pageContentInput.innerHTML;
+  }
+
+  function historyRestore(entry, fromStack, toStack) {
+    const currentHtml = els.pageContentInput.innerHTML;
+    const currentCaret = getCaretOffset();
+    // an unfinished typing group is part of "current" — fold it in first
+    clearTimeout(editHistory.timer);
+    editHistory.typing = false;
+    historyPush(toStack, currentHtml, currentCaret);
+    editHistory.restoring = true;
+    els.pageContentInput.innerHTML = entry.html;
+    setCaretOffset(entry.caret);
+    els.pageContentInput.dispatchEvent(new Event('input'));
+    editHistory.restoring = false;
+    editHistory.baseline = els.pageContentInput.innerHTML;
+    editHistory.prevHtml = editHistory.baseline;
+  }
+
+  function historyUndo() {
+    if (!editHistory.undo.length) return;
+    // if typing is still open, its baseline snapshot is already on the stack
+    historyRestore(editHistory.undo.pop(), editHistory.undo, editHistory.redo);
+  }
+
+  function historyRedo() {
+    if (!editHistory.redo.length) return;
+    historyRestore(editHistory.redo.pop(), editHistory.redo, editHistory.undo);
+  }
+
+  els.pageContentInput.addEventListener('keydown', (e) => {
+    if (e.isComposing || e.keyCode === 229) return;
+    if (!(e.ctrlKey || e.metaKey) || e.altKey) return;
+    if (e.code === 'KeyZ' && !e.shiftKey) {
+      e.preventDefault();
+      historyUndo();
+    } else if (e.code === 'KeyY' || (e.code === 'KeyZ' && e.shiftKey)) {
+      e.preventDefault();
+      historyRedo();
+    }
+  });
+
+  els.pageContentInput.addEventListener('beforeinput', (e) => {
+    if (e.inputType === 'historyUndo') { e.preventDefault(); historyUndo(); }
+    else if (e.inputType === 'historyRedo') { e.preventDefault(); historyRedo(); }
+  });
+
   function afterCommand() {
     els.pageContentInput.focus();
-    els.pageContentInput.dispatchEvent(new Event('input'));
+    historyStep();
   }
 
   // Electron's BrowserWindow does not implement window.prompt() — it
