@@ -1,6 +1,22 @@
 /* 빼꼬미 Peekomi — brand layer, loaded after each window's own stylesheet.
    navy = headers/tabs, memo-yellow = emphasis + selected state (text on it is
    always navy), no shadows (separation comes from lines and fills). */
+/* bundled fonts (SIL OFL, see fonts/OFL-*.txt) — Hangul + Latin subset */
+@font-face {
+  font-family: "Noto Sans KR";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("fonts/NotoSansKR-VF.woff2") format("woff2");
+}
+@font-face {
+  font-family: "Jua";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("fonts/Jua-Regular.woff2") format("woff2");
+}
+
 :root {
   --navy: #1F2A44;
   --memo-yellow: #FFC94D;
