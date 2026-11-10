@@ -33,8 +33,34 @@
         <button id="panelEditBtn" class="panel-btn">전체 편집 열기</button>
       </div>
     </div>
+    <div id="schedPanel" class="panel sched-panel">
+      <div id="schedDragHandle" class="drag-handle" title="드래그해서 위치 이동">⋮⋮</div>
+      <div class="panel-header">
+        <span class="sched-title">📅 일정</span>
+        <span id="schedToday" class="sched-today"></span>
+        <button id="schedPinBtn" class="pin-btn" title="고정하면 마우스를 떼도 닫히지 않습니다">📌</button>
+      </div>
+      <div id="schedList" class="sched-list"></div>
+      <form id="quickAdd" class="quick-add" autocomplete="off">
+        <input id="qaTitle" class="qa-title" maxlength="120" placeholder="새 일정 (예: 팀 회의)" />
+        <div class="qa-row">
+          <div id="qaDays" class="qa-days">
+            <button type="button" class="qa-day on" data-off="0">오늘</button>
+            <button type="button" class="qa-day" data-off="1">내일</button>
+            <button type="button" class="qa-day" data-off="2">모레</button>
+          </div>
+          <input id="qaTime" class="qa-time" maxlength="5" placeholder="14:30" title="시간 (비우면 종일)" />
+          <button id="qaAdd" type="submit" class="panel-btn qa-add">추가</button>
+        </div>
+      </form>
+      <div class="panel-footer">
+        <span id="schedStatus" class="panel-save-status"></span>
+        <button id="schedOpenBtn" class="panel-btn">달력 열기</button>
+      </div>
+    </div>
     <div id="tabs" class="tabs"></div>
   </div>
+  <script src="schedule-core.js"></script>
   <script src="shortcuts.js"></script>
   <script src="widget.js"></script>
 </body>

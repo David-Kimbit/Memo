@@ -1,0 +1,107 @@
+html, body {
+  margin: 0;
+  height: 100%;
+  background: #fffaf0;
+  font-family: "Segoe UI", "Malgun Gothic", system-ui, sans-serif;
+  color: #3b2f22;
+  overflow: hidden;
+  user-select: none;
+}
+* { box-sizing: border-box; }
+
+.box {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  border: 2px solid #b5652b;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.head {
+  flex: 0 0 auto;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 14px;
+  background: #b5652b;
+  color: #fff;
+  font-weight: 700;
+  font-size: 14px;
+  -webkit-app-region: drag;
+}
+.count { font-size: 12px; font-weight: 600; opacity: 0.9; }
+
+.list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 8px 10px;
+}
+
+.item {
+  position: relative;
+  padding: 8px 10px 9px 14px;
+  margin-bottom: 8px;
+  border: 1px solid #e3d5b8;
+  border-radius: 8px;
+  background: #fff;
+}
+.item::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 5px;
+  border-radius: 8px 0 0 8px;
+  background: var(--c, #a7c8ec);
+}
+.title {
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.35;
+  word-break: break-all;
+}
+.when {
+  margin-top: 2px;
+  font-size: 12px;
+  color: #6b5c48;
+}
+.tag {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 0 6px;
+  border-radius: 8px;
+  background: #b3402f;
+  color: #fff;
+  font-size: 10.5px;
+  font-weight: 700;
+}
+.tag.soft { background: #6b8fb5; }
+.acts {
+  display: flex;
+  gap: 5px;
+  margin-top: 7px;
+}
+
+.btn {
+  border: 1px solid #d9c9a8;
+  background: #fff;
+  color: #3b2f22;
+  padding: 4px 9px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.btn:hover { background: #f4ede0; }
+.btn.primary { background: #b5652b; border-color: #b5652b; color: #fff; }
+.btn.primary:hover { filter: brightness(1.08); }
+.btn.spacer { margin-left: auto; }
+
+.foot {
+  flex: 0 0 auto;
+  padding: 6px 10px 10px;
+  display: flex;
+  justify-content: flex-end;
+}
+.foot[hidden] { display: none; }

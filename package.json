@@ -17,6 +17,7 @@
     },
     "files": [
       "main.js",
+      "schedule-main.js",
       "preload.js",
       "renderer/**/*",
       "assets/**/*"

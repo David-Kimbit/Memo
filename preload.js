@@ -22,4 +22,23 @@ contextBridge.exposeInMainWorld('api', {
   openAttachment: (storedName) => ipcRenderer.send('attachment:open', storedName),
   removeAttachment: (storedName) => ipcRenderer.invoke('attachment:remove', storedName),
   readAttachmentDataUrl: (storedName) => ipcRenderer.invoke('attachment:read-data-url', storedName),
+
+  // schedule
+  getFolderList: () => ipcRenderer.invoke('folders:list'),
+  getEvents: () => ipcRenderer.invoke('events:get'),
+  upsertEvent: (ev) => ipcRenderer.invoke('events:upsert', ev),
+  deleteEvent: (id) => ipcRenderer.invoke('events:delete', id),
+  skipEventDate: (id, date) => ipcRenderer.invoke('events:skip', id, date),
+  onEventsChanged: (cb) => ipcRenderer.on('events:changed', () => cb()),
+  openCalendar: (cmd) => ipcRenderer.send('calendar:open', cmd),
+  onCalendarCommand: (cb) => ipcRenderer.on('calendar:command', (event, cmd) => cb(cmd)),
+  closeCalendar: () => ipcRenderer.send('calendar:close'),
+  getCalendarState: () => ipcRenderer.invoke('calendar:get-state'),
+  setCalendarOnTop: (onTop) => ipcRenderer.send('calendar:set-top', onTop),
+  getReminders: () => ipcRenderer.invoke('reminders:get'),
+  onRemindersChanged: (cb) => ipcRenderer.on('reminders:changed', (event, list) => cb(list)),
+  dismissReminder: (id) => ipcRenderer.send('reminders:dismiss', id),
+  dismissAllReminders: () => ipcRenderer.send('reminders:dismiss-all'),
+  snoozeReminder: (id, minutes) => ipcRenderer.send('reminders:snooze', id, minutes),
+  openReminder: (id) => ipcRenderer.send('reminders:open', id),
 });

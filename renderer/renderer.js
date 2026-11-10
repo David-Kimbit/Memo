@@ -1162,6 +1162,14 @@
     refreshShortcutTitles();
   }
 
+  document.getElementById('calendarBtn').addEventListener('click', () => window.api.openCalendar({ type: 'show' }));
+  // Create an event already linked to the folder being viewed — the calendar
+  // opens with its editor ready, titled after the folder.
+  document.getElementById('addEventBtn').addEventListener('click', () => {
+    const folder = getCurrentFolder();
+    if (folder) window.api.openCalendar({ type: 'new', folderId: folder.id, title: folder.title });
+  });
+
   const donateOverlay = document.getElementById('donateOverlay');
   const closeDonate = () => { donateOverlay.hidden = true; };
   document.getElementById('donateBtn').addEventListener('click', () => { donateOverlay.hidden = false; });

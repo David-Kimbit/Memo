@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'; img-src 'self' data:;" />
+<title>일정 달력</title>
+<link rel="stylesheet" href="calendar.css" />
+</head>
+<body>
+  <div id="app">
+    <header class="cal-head">
+      <button id="prevBtn" class="icon-btn" title="이전 달">‹</button>
+      <div id="monthTitle" class="month-title"></div>
+      <button id="nextBtn" class="icon-btn" title="다음 달">›</button>
+      <button id="todayBtn" class="today-btn">오늘</button>
+      <span class="spacer"></span>
+      <button id="pinBtn" class="icon-btn pin" title="항상 위에 표시">📌</button>
+      <button id="closeBtn" class="icon-btn" title="닫기">✕</button>
+    </header>
+
+    <div class="weekdays">
+      <span class="sun">일</span><span>월</span><span>화</span><span>수</span><span>목</span><span>금</span><span class="sat">토</span>
+    </div>
+    <div id="grid" class="grid"></div>
+
+    <section class="agenda">
+      <div class="agenda-head">
+        <span id="agendaTitle" class="agenda-title"></span>
+        <button id="addBtn" class="btn small primary">+ 일정</button>
+      </div>
+      <div id="agendaList" class="agenda-list"></div>
+    </section>
+
+    <div id="editor" class="editor-overlay" hidden>
+      <form id="editorForm" class="editor" autocomplete="off">
+        <div id="editorHeading" class="editor-heading">새 일정</div>
+        <div id="repeatNotice" class="notice" hidden></div>
+
+        <input id="fTitle" class="field" maxlength="120" placeholder="일정 제목" />
+
+        <div class="row">
+          <label class="lbl">날짜</label>
+          <input id="fDate" type="date" class="field grow" />
+          <label class="check"><input id="fAllDay" type="checkbox" /> 종일</label>
+        </div>
+        <div class="row" id="timeRow">
+          <label class="lbl">시간</label>
+          <input id="fTime" type="time" class="field grow" />
+          <span class="dash">~</span>
+          <input id="fEnd" type="time" class="field grow" />
+        </div>
+
+        <div class="row">
+          <label class="lbl">반복</label>
+          <select id="fRepeat" class="field grow"></select>
+        </div>
+        <div class="row" id="untilRow" hidden>
+          <label class="lbl">반복 끝</label>
+          <input id="fUntil" type="date" class="field grow" />
+          <span class="hint">비우면 계속</span>
+        </div>
+
+        <div class="row top">
+          <label class="lbl">알림</label>
+          <div id="fRemind" class="remind-list"></div>
+        </div>
+        <div id="allDayHint" class="hint pad" hidden>종일 일정은 오전 9시를 기준으로 알려드려요.</div>
+
+        <div class="row">
+          <label class="lbl">색상</label>
+          <div id="fColors" class="swatches"></div>
+        </div>
+        <div class="row">
+          <label class="lbl">메모 폴더</label>
+          <select id="fFolder" class="field grow"></select>
+          <button id="openFolderBtn" type="button" class="btn small" title="연결된 폴더 열기" hidden>열기</button>
+        </div>
+        <textarea id="fNote" class="field note" maxlength="2000" rows="3" placeholder="간단한 메모 (선택)"></textarea>
+
+        <div id="editorError" class="error" hidden></div>
+        <div class="editor-actions">
+          <div class="del-group">
+            <button id="deleteOneBtn" type="button" class="btn danger small" hidden>이 날만 삭제</button>
+            <button id="deleteBtn" type="button" class="btn danger small" hidden>삭제</button>
+          </div>
+          <button id="cancelBtn" type="button" class="btn">취소</button>
+          <button id="saveBtn" type="submit" class="btn primary">저장</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  <script src="schedule-core.js"></script>
+  <script src="calendar.js"></script>
+</body>
+</html>

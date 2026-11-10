@@ -2,6 +2,7 @@ const { app, BrowserWindow, ipcMain, Tray, Menu, screen, nativeImage, shell, dia
 const path = require('path');
 const fs = require('fs');
 const { autoUpdater } = require('electron-updater');
+const schedule = require('./schedule-main');
 
 // Fixed regardless of packaging/productName so the notes folder never
 // moves between the dev build and the installed build.
@@ -22,6 +23,8 @@ const FULL_W = STRIP_W + PANEL_W; // the widget window is always this wide
 const TAB_H = 92;
 const TAB_GAP = 4;
 const ADD_TAB_H = 34;
+const SCHED_TAB_H = 64; // the 일정 tab pinned above the folder tabs
+const MIN_WIDGET_H = 380; // tall enough for the schedule panel's list and quick-add form
 const MAX_ATTACHMENT_BYTES = 200 * 1024 * 1024;
 const DONATE_URL = 'https://www.buymeacoffee.com/kdwikorea';
 // Attachments open with the default app, which for these would run them —
@@ -149,8 +152,8 @@ function getTargetDisplay() {
 }
 
 function computeHeight(wa) {
-  const contentH = cachedFolderCount * (TAB_H + TAB_GAP) + TAB_GAP + ADD_TAB_H + TAB_GAP;
-  return Math.min(Math.max(contentH, TAB_H + ADD_TAB_H + 20), wa.height - 24);
+  const contentH = SCHED_TAB_H + TAB_GAP + cachedFolderCount * (TAB_H + TAB_GAP) + TAB_GAP + ADD_TAB_H + TAB_GAP;
+  return Math.min(Math.max(contentH, MIN_WIDGET_H), wa.height - 24);
 }
 
 // The window never changes size when the panel opens or closes — the slide is
@@ -431,6 +434,7 @@ function updateTrayMenu() {
   const isVisible = !!widgetWindow && widgetWindow.isVisible();
   const menu = Menu.buildFromTemplate([
     { label: '메모함 열기', click: () => openMain() },
+    { label: '📅 일정 달력', click: () => schedule.openCalendar({ type: 'show' }) },
     { label: '계산기', click: () => openCalculator() },
     { type: 'separator' },
     {
@@ -539,6 +543,17 @@ if (!gotLock) {
     currentDisplayId = getActiveDisplay().id;
     configureAutoLaunch(cachedConfig.autoLaunch !== false);
     createWidgetWindow();
+    schedule.init({
+      dataDir,
+      backupsDir,
+      preloadPath: path.join(__dirname, 'preload.js'),
+      atomicWrite: atomicWriteFileSync,
+      logError,
+      lockDown,
+      getConfig: () => cachedConfig,
+      patchConfig: (patch) => saveConfig({ ...cachedConfig, ...patch }),
+      getActiveDisplay,
+    });
     createTray();
     startDisplayWatch();
 
@@ -553,6 +568,13 @@ app.on('window-all-closed', () => {
 });
 
 ipcMain.handle('data:get', () => loadData());
+// Just enough about each folder for the calendar to link events to it, without
+// shipping every page (and pasted image) of every note across IPC.
+ipcMain.handle('folders:list', () => {
+  const data = loadData();
+  const folders = Array.isArray(data.folders) ? data.folders : [];
+  return folders.map((f) => ({ id: f.id, title: f.title, color: f.color }));
+});
 ipcMain.handle('data:save', (event, data) => {
   if (!data || !Array.isArray(data.folders)) return { ok: false, error: '메모 데이터 형식이 올바르지 않습니다' };
   let ok = true;

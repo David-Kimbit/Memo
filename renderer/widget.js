@@ -8,11 +8,26 @@
   let activePageId = null;
   let leaveTimer = null;
   let saveTimer = null;
+  let events = [];
+  let showingSchedule = false;
+  let quickDayOffset = 0;
+  const S = window.Schedule;
 
   const els = {
     widget: document.getElementById('widget'),
     tabs: document.getElementById('tabs'),
     panel: document.getElementById('panel'),
+    schedPanel: document.getElementById('schedPanel'),
+    schedList: document.getElementById('schedList'),
+    schedToday: document.getElementById('schedToday'),
+    schedStatus: document.getElementById('schedStatus'),
+    schedPinBtn: document.getElementById('schedPinBtn'),
+    schedOpenBtn: document.getElementById('schedOpenBtn'),
+    schedDragHandle: document.getElementById('schedDragHandle'),
+    quickAdd: document.getElementById('quickAdd'),
+    qaTitle: document.getElementById('qaTitle'),
+    qaTime: document.getElementById('qaTime'),
+    qaDays: document.getElementById('qaDays'),
     dragHandle: document.getElementById('dragHandle'),
     panelColorDot: document.getElementById('panelColorDot'),
     panelTitleInput: document.getElementById('panelTitleInput'),
@@ -49,8 +64,36 @@
     persist();
   }
 
+  // How many of today's events are still ahead (all-day ones count all day).
+  function remainingToday() {
+    const now = Date.now();
+    return S.eventsOn(events, S.toYmd(new Date())).filter((o) => !S.isTimed(o.event) || o.startMs >= now).length;
+  }
+
+  let schedTabEl = null;
+  function updateSchedTab() {
+    if (!schedTabEl) return;
+    const left = remainingToday();
+    schedTabEl.textContent = '일정';
+    if (left > 0) {
+      const badge = document.createElement('span');
+      badge.className = 'tab-count';
+      badge.textContent = String(left);
+      schedTabEl.append(' ', badge);
+    }
+  }
+
   function renderTabs() {
     els.tabs.innerHTML = '';
+
+    schedTabEl = document.createElement('div');
+    schedTabEl.className = 'tab tab-sched';
+    schedTabEl.title = '일정';
+    schedTabEl.addEventListener('mouseenter', showSchedule);
+    schedTabEl.addEventListener('click', () => window.api.openCalendar({ type: 'show' }));
+    updateSchedTab();
+    els.tabs.appendChild(schedTabEl);
+
     folders.forEach((folder) => {
       const tab = document.createElement('div');
       tab.className = 'tab';
@@ -108,6 +151,7 @@
   function showFolder(id) {
     const folder = folders.find((f) => f.id === id);
     if (!folder) return;
+    showingSchedule = false;
     activeFolderId = id;
     if (!activePageId || !folder.pages.find((p) => p.id === activePageId)) {
       activePageId = folder.pages[0] ? folder.pages[0].id : null;
@@ -144,8 +188,11 @@
     els.panelBodyInput.innerHTML = page ? page.content || '' : '';
   }
 
+  // The memo panel and the schedule panel share the same spot; hovering a tab
+  // shows whichever one it belongs to.
   function expand() {
-    els.panel.classList.add('visible');
+    els.panel.classList.toggle('visible', !showingSchedule);
+    els.schedPanel.classList.toggle('visible', showingSchedule);
     if (!expanded) {
       expanded = true;
       els.widget.classList.add('open');
@@ -153,14 +200,164 @@
     }
   }
 
+  function hidePanels() {
+    els.panel.classList.remove('visible');
+    els.schedPanel.classList.remove('visible');
+    els.widget.classList.remove('open');
+  }
+
   function collapse() {
     if (!expanded) return;
     expanded = false;
     activeFolderId = null;
-    els.panel.classList.remove('visible');
-    els.widget.classList.remove('open');
+    hidePanels();
     window.api.setWidgetExpanded(false);
   }
+
+  // ---------- Schedule panel ----------
+
+  function schedRow(o, today, withDay) {
+    const ev = o.event;
+    const row = document.createElement('div');
+    row.className = 'sched-row' + (o.date === today && S.isTimed(ev) && o.startMs < Date.now() ? ' past' : '');
+    row.style.setProperty('--c', ev.color);
+    const when = document.createElement('span');
+    when.className = 'sched-when';
+    when.textContent = (withDay ? S.relativeDayLabel(o.date, today) + ' ' : '') + (S.isTimed(ev) ? ev.time : '종일');
+    const name = document.createElement('span');
+    name.className = 'sched-name';
+    name.textContent = ev.title;
+    name.title = ev.title;
+    row.append(when, name);
+    const icons = (ev.repeat !== 'none' ? '🔁' : '') + (ev.remind.length ? '🔔' : '') + (ev.folderId ? '📂' : '');
+    if (icons) {
+      const ic = document.createElement('span');
+      ic.className = 'sched-icons';
+      ic.textContent = icons;
+      row.appendChild(ic);
+    }
+    row.addEventListener('click', () => window.api.openCalendar({ type: 'edit', eventId: ev.id, date: o.date }));
+    return row;
+  }
+
+  function sectionLabel(text) {
+    const el = document.createElement('div');
+    el.className = 'sched-section';
+    el.textContent = text;
+    return el;
+  }
+
+  // Only the list is redrawn, never the quick-add form, so a half-typed title
+  // survives a refresh.
+  function renderSchedule() {
+    const today = S.toYmd(new Date());
+    els.schedToday.textContent = S.dateLabel(today);
+    const list = els.schedList;
+    list.innerHTML = '';
+
+    list.appendChild(sectionLabel('오늘'));
+    const todays = S.eventsOn(events, today);
+    if (!todays.length) {
+      const empty = document.createElement('div');
+      empty.className = 'sched-empty';
+      empty.textContent = '오늘은 일정이 없어요';
+      list.appendChild(empty);
+    }
+    todays.forEach((o) => list.appendChild(schedRow(o, today, false)));
+
+    const later = S.upcoming(events, S.addDays(today, 1), 7).slice(0, 12);
+    if (later.length) {
+      list.appendChild(sectionLabel('다가오는 일정 (7일)'));
+      later.forEach((o) => list.appendChild(schedRow(o, today, true)));
+    }
+  }
+
+  function showSchedule() {
+    showingSchedule = true;
+    activeFolderId = null;
+    renderSchedule();
+    expand();
+  }
+
+  function flashSchedStatus(text, isError) {
+    els.schedStatus.style.color = isError ? '#b3402f' : '';
+    els.schedStatus.textContent = text;
+    clearTimeout(flashSchedStatus._t);
+    flashSchedStatus._t = setTimeout(() => {
+      els.schedStatus.textContent = '';
+    }, 1800);
+  }
+
+  // "14:30", "1430", "14" or "9" -> "HH:MM"; '' for blank; null when unreadable.
+  function parseTimeInput(text) {
+    const s = text.trim();
+    if (!s) return '';
+    const m = /^(\d{1,2})(?::?(\d{2}))?$/.exec(s);
+    if (!m) return null;
+    const h = Number(m[1]);
+    const mi = m[2] === undefined ? 0 : Number(m[2]);
+    if (h > 23 || mi > 59) return null;
+    return S.pad2(h) + ':' + S.pad2(mi);
+  }
+
+  async function submitQuickAdd() {
+    const title = els.qaTitle.value.trim();
+    if (!title) {
+      els.qaTitle.focus();
+      return;
+    }
+    const time = parseTimeInput(els.qaTime.value);
+    els.qaTime.classList.toggle('invalid', time === null);
+    if (time === null) {
+      flashSchedStatus('시간은 14:30 처럼 입력해 주세요', true);
+      els.qaTime.focus();
+      return;
+    }
+    const base = new Date();
+    base.setDate(base.getDate() + quickDayOffset);
+    const res = await window.api.upsertEvent({
+      title,
+      date: S.toYmd(base),
+      time,
+      repeat: 'none',
+      remind: time ? [5] : [0],
+    });
+    if (!res || !res.ok) {
+      flashSchedStatus((res && res.error) || '추가하지 못했어요', true);
+      return;
+    }
+    els.qaTitle.value = '';
+    els.qaTime.value = '';
+    flashSchedStatus('추가됨');
+    await loadEvents();
+  }
+
+  els.quickAdd.addEventListener('submit', (e) => {
+    e.preventDefault();
+    submitQuickAdd();
+  });
+  els.qaTime.addEventListener('input', () => els.qaTime.classList.remove('invalid'));
+  els.qaDays.addEventListener('click', (e) => {
+    const btn = e.target.closest('.qa-day');
+    if (!btn) return;
+    quickDayOffset = Number(btn.dataset.off);
+    els.qaDays.querySelectorAll('.qa-day').forEach((b) => b.classList.toggle('on', b === btn));
+  });
+  els.schedOpenBtn.addEventListener('click', () => window.api.openCalendar({ type: 'show' }));
+
+  async function loadEvents() {
+    events = (await window.api.getEvents()) || [];
+    updateSchedTab();
+    if (showingSchedule) renderSchedule();
+  }
+  window.api.onEventsChanged(loadEvents);
+  // Roll the tab count and "today" over without needing a data change. Only the
+  // label is touched — rebuilding the tabs under a resting cursor would re-fire
+  // hover and reload the memo panel mid-typing.
+  setInterval(() => {
+    updateSchedTab();
+    if (showingSchedule && expanded) renderSchedule();
+  }, 60 * 1000);
 
   function flashStatus(text) {
     els.panelSaveStatus.style.color = '';
@@ -364,8 +561,7 @@
     clearTimeout(leaveTimer);
     expanded = false;
     activeFolderId = null;
-    els.widget.classList.remove('open');
-    els.panel.classList.remove('visible');
+    hidePanels();
   });
 
   // After the widget hops to another monitor it nudges in from the edge.
@@ -391,26 +587,32 @@
     renderTabs();
   });
 
-  els.pinBtn.addEventListener('click', () => {
+  // Both panels carry a pin button; they share one state.
+  function togglePinned() {
     pinned = !pinned;
     els.pinBtn.classList.toggle('active', pinned);
+    els.schedPinBtn.classList.toggle('active', pinned);
     window.api.setPinned(pinned);
-  });
+  }
+  els.pinBtn.addEventListener('click', togglePinned);
+  els.schedPinBtn.addEventListener('click', togglePinned);
 
   // ---------- Drag to reposition vertically ----------
 
-  els.dragHandle.addEventListener('mousedown', (e) => {
-    e.preventDefault();
-    const onMove = (ev) => {
-      if (ev.movementY) window.api.dragBy(ev.movementY);
-    };
-    const onUp = () => {
-      document.removeEventListener('mousemove', onMove);
-      document.removeEventListener('mouseup', onUp);
-      window.api.dragEnd();
-    };
-    document.addEventListener('mousemove', onMove);
-    document.addEventListener('mouseup', onUp);
+  [els.dragHandle, els.schedDragHandle].forEach((handle) => {
+    handle.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      const onMove = (ev) => {
+        if (ev.movementY) window.api.dragBy(ev.movementY);
+      };
+      const onUp = () => {
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onUp);
+        window.api.dragEnd();
+      };
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
+    });
   });
 
   // ---------- Data sync ----------
@@ -440,4 +642,5 @@
   window.api.onDataChanged(load);
 
   load();
+  loadEvents();
 })();

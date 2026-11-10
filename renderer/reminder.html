@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'; img-src 'self' data:;" />
+<title>일정 알림</title>
+<link rel="stylesheet" href="reminder.css" />
+</head>
+<body>
+  <div class="box">
+    <div class="head"><span class="head-title">🔔 일정 알림</span><span id="count" class="count"></span></div>
+    <div id="list" class="list"></div>
+    <div id="foot" class="foot" hidden><button id="dismissAll" class="btn">모두 확인</button></div>
+  </div>
+  <script src="schedule-core.js"></script>
+  <script src="reminder.js"></script>
+</body>
+</html>
