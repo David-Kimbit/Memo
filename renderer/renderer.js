@@ -1160,6 +1160,13 @@
     refreshShortcutTitles();
   }
 
+  const donateOverlay = document.getElementById('donateOverlay');
+  const closeDonate = () => { donateOverlay.hidden = true; };
+  document.getElementById('donateBtn').addEventListener('click', () => { donateOverlay.hidden = false; });
+  document.getElementById('donateCloseBtn').addEventListener('click', closeDonate);
+  donateOverlay.addEventListener('click', (e) => { if (e.target === donateOverlay) closeDonate(); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !donateOverlay.hidden) closeDonate(); });
+
   document.getElementById('shortcutBtn').addEventListener('click', () => {
     shortcutMsg.textContent = '';
     renderShortcutList();

@@ -21,3 +21,11 @@ npm start
 npm install --save-dev electron-builder
 npx electron-builder --win
 ```
+
+## 후원
+
+무료로 쓸 수 있는 앱입니다. 도움이 되셨다면 커피 한 잔으로 응원해 주세요 ☕
+
+[buymeacoffee.com/kdwikorea](https://www.buymeacoffee.com/kdwikorea)
+
+앱 안에서는 상단의 **☕ 후원** 버튼이나 트레이 메뉴의 **후원하기**에서 열 수 있어요.

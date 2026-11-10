@@ -259,6 +259,35 @@ html, body {
   font-family: inherit;
 }
 
+.donate-box {
+  text-align: center;
+}
+
+.donate-text {
+  margin: 0 0 8px;
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--ink-soft);
+}
+
+.donate-qr {
+  display: block;
+  width: 220px;
+  height: 220px;
+  margin: 10px auto;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: #fff;
+}
+
+.donate-link {
+  display: inline-block;
+  font-size: 13px;
+  color: var(--accent);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
 .shortcut-list {
   display: flex;
   flex-direction: column;

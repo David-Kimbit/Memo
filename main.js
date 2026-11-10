@@ -23,6 +23,7 @@ const TAB_H = 92;
 const TAB_GAP = 4;
 const ADD_TAB_H = 34;
 const MAX_ATTACHMENT_BYTES = 200 * 1024 * 1024;
+const DONATE_URL = 'https://www.buymeacoffee.com/kdwikorea';
 // Attachments open with the default app, which for these would run them —
 // show them in Explorer instead so opening one is always a deliberate step.
 const BLOCKED_OPEN_EXT = new Set(['.exe', '.bat', '.cmd', '.com', '.scr', '.msi', '.ps1', '.psm1', '.vbs', '.vbe', '.js', '.jse', '.wsf', '.hta', '.lnk', '.reg', '.dll', '.jar', '.cpl']);
@@ -447,6 +448,7 @@ function updateTrayMenu() {
       click: () => toggleAutoLaunch(),
     },
     { label: '업데이트 확인', click: () => checkForUpdates(true) },
+    { label: '☕ 후원하기', click: () => shell.openExternal(DONATE_URL) },
     { type: 'separator' },
     { label: '종료', click: () => app.quit() },
   ]);
