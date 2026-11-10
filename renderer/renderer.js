@@ -140,8 +140,10 @@
         numberCounter++;
         marker = numberMarker(numberCounter, el.dataset.numStyle) + '. ';
       }
-      el.insertBefore(document.createTextNode(marker), el.firstChild);
+      el.insertBefore(scratchDoc.createTextNode(marker), el.firstChild);
     });
+    // textContent glues block-level lines together ("할 일☑ 주간"), so put a space after each one
+    stripHtmlScratch.querySelectorAll('div, p, li, tr, br').forEach((el) => el.after(scratchDoc.createTextNode(' ')));
     return stripHtmlScratch.textContent || '';
   }
 
