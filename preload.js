@@ -25,6 +25,8 @@ contextBridge.exposeInMainWorld('api', {
 
   // schedule
   getFolderList: () => ipcRenderer.invoke('folders:list'),
+  getTheme: () => ipcRenderer.invoke('theme:get'),
+  cycleTheme: () => ipcRenderer.invoke('theme:cycle'),
   getEvents: () => ipcRenderer.invoke('events:get'),
   upsertEvent: (ev) => ipcRenderer.invoke('events:upsert', ev),
   deleteEvent: (id) => ipcRenderer.invoke('events:delete', id),

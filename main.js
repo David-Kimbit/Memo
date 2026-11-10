@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, Tray, Menu, screen, nativeImage, shell, dialog } = require('electron');
+const { app, BrowserWindow, ipcMain, Tray, Menu, screen, nativeImage, shell, dialog, nativeTheme } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const { autoUpdater } = require('electron-updater');
@@ -326,7 +326,7 @@ function ensureMainWindow() {
     height: 780,
     minWidth: 760,
     minHeight: 520,
-    backgroundColor: '#e9e0cd',
+    backgroundColor: windowBg(),
     autoHideMenuBar: true,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
@@ -384,7 +384,7 @@ function openCalculator(value) {
     height: 470,
     resizable: false,
     autoHideMenuBar: true,
-    backgroundColor: '#fffaf0',
+    backgroundColor: windowBg(),
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
@@ -422,6 +422,26 @@ function resetWidgetPosition() {
   refreshWidgetSize();
 }
 
+// Theme: 'system' follows Windows, otherwise forced. nativeTheme.themeSource
+// drives prefers-color-scheme in every window, so the CSS needs nothing else.
+const THEMES = ['system', 'light', 'dark'];
+const THEME_LABELS = { system: '자동 (Windows 설정 따라가기)', light: '라이트', dark: '다크' };
+function currentTheme() {
+  return THEMES.includes(cachedConfig && cachedConfig.theme) ? cachedConfig.theme : 'system';
+}
+function windowBg() {
+  return nativeTheme.shouldUseDarkColors ? '#141A2A' : '#F7F8FB';
+}
+function setTheme(theme) {
+  if (!THEMES.includes(theme)) return;
+  saveConfig({ ...cachedConfig, theme });
+  nativeTheme.themeSource = theme;
+  updateTrayMenu();
+  for (const w of BrowserWindow.getAllWindows()) {
+    if (!w.isDestroyed() && w !== widgetWindow) w.setBackgroundColor(windowBg());
+  }
+}
+
 function toggleAutoLaunch() {
   const next = !cachedConfig.autoLaunch;
   saveConfig({ ...cachedConfig, autoLaunch: next });
@@ -442,6 +462,15 @@ function updateTrayMenu() {
       click: () => setWidgetVisible(!isVisible),
     },
     { label: '위젯 위치 초기화', click: () => resetWidgetPosition() },
+    {
+      label: '화면 테마',
+      submenu: THEMES.map((t) => ({
+        label: THEME_LABELS[t],
+        type: 'radio',
+        checked: currentTheme() === t,
+        click: () => setTheme(t),
+      })),
+    },
     { type: 'separator' },
     { label: '백업 폴더 열기', click: () => shell.openPath(backupsDir) },
     { type: 'separator' },
@@ -539,6 +568,7 @@ if (!gotLock) {
   app.whenReady().then(() => {
     ensureData();
     cachedConfig = loadConfigFromDisk();
+    nativeTheme.themeSource = currentTheme();
     cachedFolderCount = loadData().folders.length;
     currentDisplayId = getActiveDisplay().id;
     configureAutoLaunch(cachedConfig.autoLaunch !== false);
@@ -553,6 +583,7 @@ if (!gotLock) {
       getConfig: () => cachedConfig,
       patchConfig: (patch) => saveConfig({ ...cachedConfig, ...patch }),
       getActiveDisplay,
+      windowBg,
     });
     createTray();
     startDisplayWatch();
@@ -570,6 +601,13 @@ app.on('window-all-closed', () => {
 ipcMain.handle('data:get', () => loadData());
 // Just enough about each folder for the calendar to link events to it, without
 // shipping every page (and pasted image) of every note across IPC.
+ipcMain.handle('theme:get', () => currentTheme());
+ipcMain.handle('theme:cycle', () => {
+  const next = THEMES[(THEMES.indexOf(currentTheme()) + 1) % THEMES.length];
+  setTheme(next);
+  return next;
+});
+
 ipcMain.handle('folders:list', () => {
   const data = loadData();
   const folders = Array.isArray(data.folders) ? data.folders : [];

@@ -1,9 +1,9 @@
 html, body {
   margin: 0;
   height: 100%;
-  background: #ffffff;
+  background: var(--paper);
   font-family: "Noto Sans KR", "Malgun Gothic", "Segoe UI", system-ui, sans-serif;
-  color: #1F2A44;
+  color: var(--ink);
   user-select: none;
 }
 
@@ -17,7 +17,7 @@ html, body {
 }
 
 #calcDisplay {
-  background: #1F2A44;
+  background: var(--navy);
   color: #eef1f7;
   border-radius: 12px;
   padding: 12px 14px 8px;
@@ -65,7 +65,7 @@ html, body {
 
 .calc-memory {
   font-size: 11px;
-  color: #4A5468;
+  color: var(--ink-soft);
   min-height: 14px;
   text-align: right;
   padding-right: 4px;
@@ -85,23 +85,23 @@ html, body {
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  background: #eef1f7;
-  color: #1F2A44;
+  background: var(--hover);
+  color: var(--ink);
 }
 .calc-btn:hover {
-  background: #E1E5EE;
+  background: var(--hover3);
 }
 .calc-btn:active {
   filter: brightness(0.95);
 }
 
 .calc-btn.fn {
-  background: #E1E5EE;
+  background: var(--hover3);
   font-size: 12px;
 }
 .calc-btn.op {
-  background: #E1E5EE;
-  color: #1F2A44;
+  background: var(--hover3);
+  color: var(--ink);
 }
 .calc-btn.eq {
   background: #FFC94D;

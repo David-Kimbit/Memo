@@ -97,7 +97,7 @@ html, body {
   flex: 0 0 auto;
   height: 34px;
   border-radius: 12px 0 0 12px;
-  background: rgba(255, 255, 255, 0.92);
+  background: var(--tab-add-bg);
 
   display: flex;
   align-items: center;
@@ -105,10 +105,10 @@ html, body {
   cursor: pointer;
   font-size: 18px;
   font-weight: 700;
-  color: #1F2A44;
+  color: var(--ink);
 }
 .tab-add:hover {
-  background: #fff;
+  background: var(--paper);
 }
 
 .panel {
@@ -118,7 +118,7 @@ html, body {
   width: 300px;
   height: 100%;
   box-sizing: border-box;
-  background: #ffffff;
+  background: var(--paper);
   border-radius: 20px 0 0 20px;
 
   display: flex;
@@ -145,7 +145,7 @@ html, body {
   line-height: 6px;
   text-align: center;
   letter-spacing: 2px;
-  color: rgba(0, 0, 0, 0.3);
+  color: rgb(var(--shade) / 0.3);
   cursor: grab;
   font-size: 12px;
   overflow: hidden;
@@ -174,14 +174,14 @@ html, body {
   min-width: 0;
   font-size: 15px;
   font-weight: 700;
-  color: #1F2A44;
+  color: var(--ink);
   border: none;
   background: transparent;
   padding: 2px;
 }
 .panel-title-input:focus {
   outline: none;
-  background: rgba(0, 0, 0, 0.04);
+  background: rgb(var(--shade) / 0.04);
   border-radius: 6px;
 }
 
@@ -191,8 +191,8 @@ html, body {
   right: -8px;
   width: 26px;
   height: 26px;
-  border: 2px solid #ffffff;
-  background: #fff;
+  border: 2px solid var(--paper);
+  background: var(--paper);
   font-size: 13px;
   cursor: pointer;
   border-radius: 50%;
@@ -231,7 +231,7 @@ html, body {
   max-width: 90px;
   padding: 3px 10px;
   border-radius: 12px;
-  background: rgba(0, 0, 0, 0.06);
+  background: rgb(var(--shade) / 0.06);
   font-size: 11.5px;
   cursor: pointer;
   white-space: nowrap;
@@ -239,7 +239,7 @@ html, body {
   text-overflow: ellipsis;
 }
 .panel-page-tab:hover {
-  background: rgba(0, 0, 0, 0.12);
+  background: rgb(var(--shade) / 0.12);
 }
 .panel-page-tab.active {
   background: #FFC94D;
@@ -254,7 +254,7 @@ html, body {
   background: transparent;
   font-size: 13px;
   line-height: 1.6;
-  color: #1F2A44;
+  color: var(--ink);
   font-family: inherit;
   padding: 4px 2px;
 }
@@ -263,7 +263,7 @@ html, body {
 }
 .panel-body-input:empty::before {
   content: attr(data-placeholder);
-  color: #4A5468;
+  color: var(--ink-soft);
   opacity: 0.7;
   pointer-events: none;
 }
@@ -276,7 +276,7 @@ html, body {
   margin: 6px 0;
 }
 .panel-body-input table.note-table td {
-  border: 1px solid #E1E5EE;
+  border: 1px solid var(--line);
   padding: 3px 8px;
 }
 .panel-body-input .chk-item {
@@ -331,7 +331,7 @@ html, body {
   gap: 8px;
   padding-top: 8px;
   margin-top: 6px;
-  border-top: 1px solid #E1E5EE;
+  border-top: 1px solid var(--line);
 }
 
 .panel-mini-toolbar {
@@ -344,11 +344,11 @@ html, body {
   flex: 0 0 auto;
   width: 22px;
   height: 22px;
-  border: 1px solid #E1E5EE;
-  background: #fff;
+  border: 1px solid var(--line);
+  background: var(--paper);
   border-radius: 6px;
   font-size: 12px;
-  color: #1F2A44;
+  color: var(--ink);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -356,24 +356,24 @@ html, body {
   padding: 0;
 }
 .mini-btn:hover {
-  background: #eef1f7;
+  background: var(--hover);
 }
 .mini-select {
   flex: 0 0 auto;
   max-width: 64px;
   height: 22px;
-  border: 1px solid #E1E5EE;
-  background: #fff;
+  border: 1px solid var(--line);
+  background: var(--paper);
   border-radius: 6px;
   font-size: 10.5px;
-  color: #1F2A44;
+  color: var(--ink);
   padding: 0 2px;
 }
 
 .panel-save-status {
   flex: 1;
   font-size: 11px;
-  color: #4A5468;
+  color: var(--ink-soft);
 }
 
 .panel-btn {
@@ -392,8 +392,8 @@ html, body {
 }
 .panel-btn-danger {
   flex: 0 0 auto;
-  background: #e9edf5;
-  color: #b3402f;
+  background: var(--hover2);
+  color: var(--danger-text);
   padding: 7px 10px;
 }
 .panel-btn-danger:hover {
@@ -406,13 +406,13 @@ html, body {
 .sched-title {
   font-size: 15px;
   font-weight: 700;
-  color: #1F2A44;
+  color: var(--ink);
 }
 .sched-today {
   flex: 1;
   text-align: right;
   font-size: 12px;
-  color: #4A5468;
+  color: var(--ink-soft);
   margin-right: 14px;
 }
 .sched-list {
@@ -425,7 +425,7 @@ html, body {
   margin: 8px 0 3px;
   font-size: 11px;
   font-weight: 700;
-  color: #4A5468;
+  color: var(--ink-soft);
   letter-spacing: 0.3px;
 }
 .sched-section:first-child {
@@ -434,7 +434,7 @@ html, body {
 .sched-empty {
   padding: 10px 2px;
   font-size: 12.5px;
-  color: #6b7488;
+  color: var(--ink-faint);
 }
 .sched-row {
   position: relative;
@@ -444,8 +444,8 @@ html, body {
   margin-bottom: 4px;
   padding: 5px 7px 5px 12px;
   border-radius: 6px;
-  background: #fff;
-  border: 1px solid #E1E5EE;
+  background: var(--paper);
+  border: 1px solid var(--line);
   cursor: pointer;
   font-size: 12.5px;
 }
@@ -460,7 +460,7 @@ html, body {
   background: var(--c, #a7c8ec);
 }
 .sched-row:hover {
-  background: #f4f6fb;
+  background: var(--panel-alt);
 }
 .sched-row.past {
   opacity: 0.5;
@@ -470,7 +470,7 @@ html, body {
   min-width: 38px;
   font-size: 11.5px;
   font-weight: 700;
-  color: #4A5468;
+  color: var(--ink-soft);
 }
 .sched-name {
   flex: 1;
@@ -479,7 +479,7 @@ html, body {
   text-overflow: ellipsis;
   white-space: nowrap;
   font-weight: 600;
-  color: #1F2A44;
+  color: var(--ink);
 }
 .sched-icons {
   flex: 0 0 auto;
@@ -494,36 +494,36 @@ html, body {
   gap: 6px;
   padding-top: 8px;
   margin-top: 4px;
-  border-top: 1px solid #E1E5EE;
+  border-top: 1px solid var(--line);
   user-select: text;
 }
 .qa-title,
 .qa-time {
   min-width: 0;
   padding: 6px 8px;
-  border: 1px solid #E1E5EE;
+  border: 1px solid var(--line);
   border-radius: 6px;
-  background: #fff;
+  background: var(--paper);
   font-size: 12.5px;
   font-family: inherit;
-  color: #1F2A44;
+  color: var(--ink);
 }
 .qa-title:focus,
 .qa-time:focus {
   outline: 2px solid rgba(255, 201, 77, 0.77);
-  border-color: #1F2A44;
+  border-color: var(--ink);
 }
 .qa-preview {
   padding: 2px 8px;
   font-size: 11.5px;
   font-weight: 700;
-  color: #1F2A44;
+  color: var(--ink);
 }
 .qa-preview[hidden] {
   display: none;
 }
 .sched-holiday {
-  color: #c0463a;
+  color: var(--danger-text);
   font-weight: 700;
 }
 .qa-time.invalid {
@@ -543,11 +543,11 @@ html, body {
 .qa-day {
   flex: 1;
   padding: 5px 0;
-  border: 1px solid #E1E5EE;
+  border: 1px solid var(--line);
   border-radius: 6px;
-  background: #fff;
+  background: var(--paper);
   font-size: 11.5px;
-  color: #1F2A44;
+  color: var(--ink);
   cursor: pointer;
 }
 .qa-day.on {

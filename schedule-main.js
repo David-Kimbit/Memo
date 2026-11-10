@@ -274,7 +274,7 @@ function syncReminderWindow() {
     skipTaskbar: true,
     alwaysOnTop: true,
     show: false,
-    backgroundColor: '#fffaf0',
+    backgroundColor: ctx.windowBg ? ctx.windowBg() : '#F7F8FB',
     webPreferences: { preload: ctx.preloadPath, contextIsolation: true, nodeIntegration: false, sandbox: true },
   });
   ctx.lockDown(reminderWin);
@@ -344,7 +344,7 @@ function createCalendarWindow(cmd, focus) {
     fullscreenable: false,
     alwaysOnTop: !!cfg.onTop,
     show: false,
-    backgroundColor: '#fffaf0',
+    backgroundColor: ctx.windowBg ? ctx.windowBg() : '#F7F8FB',
     webPreferences: { preload: ctx.preloadPath, contextIsolation: true, nodeIntegration: false, sandbox: true },
   });
   ctx.lockDown(calendarWin);

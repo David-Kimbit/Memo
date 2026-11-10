@@ -58,12 +58,12 @@ html, body {
   border-radius: 6px;
   font-size: 13px;
   width: 220px;
-  background: #fff;
+  background: var(--paper);
 }
 
 .btn {
   border: 1px solid var(--line);
-  background: #fff;
+  background: var(--paper);
   color: var(--ink);
   padding: 7px 14px;
   border-radius: 6px;
@@ -71,12 +71,12 @@ html, body {
   cursor: pointer;
   font-weight: 600;
 }
-.btn:hover { background: #eef1f7; }
+.btn:hover { background: var(--hover); }
 .btn.small { padding: 4px 10px; font-size: 12px; }
 .btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
 .btn.primary:hover { filter: brightness(1.08); }
 .btn.ghost { background: transparent; border-color: transparent; }
-.btn.ghost:hover { background: rgba(0,0,0,0.05); }
+.btn.ghost:hover { background: rgb(var(--shade) / 0.05); }
 .btn.danger { color: var(--danger); border-color: rgba(179,64,47,0.4); }
 .btn.danger:hover { background: rgba(179,64,47,0.08); }
 
@@ -110,6 +110,7 @@ html, body {
   position: absolute;
   border-radius: 12px 14px 6px 6px;
   border: 1px solid rgba(0,0,0,0.12);
+  color: #1F2A44; /* pastel card backgrounds stay light in dark mode, so the text stays dark */
 
   cursor: pointer;
   overflow: hidden;
@@ -254,7 +255,7 @@ html, body {
   line-height: 1.6;
   box-sizing: border-box;
   resize: none;
-  background: #fff;
+  background: var(--paper);
   color: var(--ink);
   font-family: inherit;
 }
@@ -325,7 +326,7 @@ html, body {
 .tooltip {
   position: fixed;
   max-width: 280px;
-  background: #1F2A44;
+  background: var(--navy);
   color: #eef1f7;
   padding: 10px 12px;
   border-radius: 6px;
@@ -367,7 +368,7 @@ html, body {
   border-radius: 6px;
   color: var(--ink);
 }
-.folder-title-input:focus { background: #eef1f7; outline: none; }
+.folder-title-input:focus { background: var(--hover); outline: none; }
 
 .folder-view-actions {
   display: flex;
@@ -398,7 +399,7 @@ html, body {
 .page-list-panel {
   width: 230px;
   border-right: 1px solid var(--line);
-  background: #f4f6fb;
+  background: var(--panel-alt);
   display: flex;
   flex-direction: column;
   flex: 0 0 auto;
@@ -422,11 +423,11 @@ html, body {
 
 .page-item {
   padding: 10px 14px;
-  border-bottom: 1px solid rgba(0,0,0,0.06);
+  border-bottom: 1px solid rgb(var(--shade) / 0.06);
   cursor: pointer;
 }
-.page-item:hover { background: #eef1f7; }
-.page-item.active { background: #E1E5EE; border-left: 3px solid var(--accent); }
+.page-item:hover { background: var(--hover); }
+.page-item.active { background: var(--hover3); border-left: 3px solid var(--accent); }
 .page-item .pi-title {
   font-size: 13px;
   font-weight: 600;
@@ -488,11 +489,11 @@ html, body {
   cursor: pointer;
   color: var(--ink);
 }
-.rte-btn:hover { background: #e9edf5; border-color: var(--line); }
+.rte-btn:hover { background: var(--hover2); border-color: var(--line); }
 
 .rte-select {
   border: 1px solid var(--line);
-  background: #fff;
+  background: var(--paper);
   border-radius: 6px;
   padding: 4px 6px;
   font-size: 12.5px;
@@ -510,9 +511,9 @@ html, body {
   border: 1px solid var(--line);
   font-size: 12px;
   cursor: pointer;
-  background: #fff;
+  background: var(--paper);
 }
-.rte-color-label:hover { background: #e9edf5; }
+.rte-color-label:hover { background: var(--hover2); }
 .rte-color {
   position: absolute;
   inset: 0;
@@ -538,7 +539,7 @@ html, body {
   display: flex;
   align-items: center;
   gap: 6px;
-  background: #e9edf5;
+  background: var(--hover2);
   border: 1px solid var(--line);
   border-radius: 12px;
   padding: 4px 6px 4px 12px;
@@ -546,7 +547,7 @@ html, body {
   cursor: pointer;
   max-width: 220px;
 }
-.attachment-chip:hover { background: #E1E5EE; }
+.attachment-chip:hover { background: var(--hover3); }
 .attachment-chip .att-name {
   white-space: nowrap;
   overflow: hidden;
@@ -571,7 +572,7 @@ html, body {
   padding: 0;
   border-radius: 12px;
   overflow: hidden;
-  background: #E1E5EE;
+  background: var(--hover3);
 }
 .attachment-chip-image .att-thumb {
   width: 100%;

@@ -1162,6 +1162,11 @@
     refreshShortcutTitles();
   }
 
+  const themeBtn = document.getElementById('themeBtn');
+  const THEME_NAMES = { system: '자동', light: '라이트', dark: '다크' };
+  const showTheme = (t) => { themeBtn.textContent = '🌓 ' + (THEME_NAMES[t] || '테마'); themeBtn.title = '화면 테마: ' + (THEME_NAMES[t] || '') + ' (누르면 바뀜)'; };
+  window.api.getTheme().then(showTheme);
+  themeBtn.addEventListener('click', async () => showTheme(await window.api.cycleTheme()));
   document.getElementById('calendarBtn').addEventListener('click', () => window.api.openCalendar({ type: 'show' }));
   // Create an event already linked to the folder being viewed — the calendar
   // opens with its editor ready, titled after the folder.

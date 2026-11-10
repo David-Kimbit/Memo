@@ -2,6 +2,8 @@
 
 화면 오른쪽 끝에 숨어 있다가, 필요할 때 빼꼼 나오는 Windows용 메모·일정 위젯입니다. 마우스를 올리면 바로 펼쳐져서 메모를 보고 고치고, 오늘 일정과 알림까지 한 곳에서 챙길 수 있어요. (예전 이름: 메모함 / Memo Cabinet)
 
+**[⬇ 설치 파일 받기 (최신 버전)](https://github.com/David-Kimbit/Memo/releases/latest)** — `memo-cabinet-setup-<버전>.exe`를 받아 실행하면 돼요. 한 번 설치하면 이후 업데이트는 자동으로 알려줘요.
+
 <p align="center">
   <img src="docs/images/widget.png" alt="화면 오른쪽 가장자리에 붙은 위젯" width="360" />
   <img src="docs/images/widget-schedule.png" alt="일정 탭을 펼친 모습" width="360" />
@@ -26,6 +28,13 @@
 ![편집기](docs/images/editor.png)
 
 ## 주요 기능
+
+**화면 테마**
+- 라이트·다크 테마를 지원해요. 기본은 Windows 설정을 따라가고, 상단 `🌓` 버튼이나 트레이 메뉴 → 화면 테마에서 라이트/다크로 고정할 수 있어요
+
+<p align="center">
+  <img src="docs/images/widget-dark.png" alt="다크 테마의 일정 탭" width="360" />
+</p>
 
 **위젯**
 - 마우스를 올리면 펼쳐지고, 📌으로 고정할 수 있어요
