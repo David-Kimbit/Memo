@@ -3,13 +3,14 @@
 <head>
 <meta charset="UTF-8" />
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'; img-src 'self' data:;" />
-<title>메모함</title>
+<title>빼꼬미</title>
 <link rel="stylesheet" href="style.css" />
+<link rel="stylesheet" href="brand.css" />
 </head>
 <body>
   <div id="app">
     <header class="topbar">
-      <h1 class="app-title">📂 메모함</h1>
+      <h1 class="app-title"><img class="app-logo" src="brand/peekomi-app-icon.svg" alt="" /><span class="brand-logo">빼꼬미</span></h1>
       <div class="topbar-actions">
         <input id="searchInput" type="text" placeholder="제목·내용 검색" />
         <button id="donateBtn" class="btn" title="후원하기">☕ 후원</button>
@@ -141,7 +142,7 @@
   <div id="donateOverlay" class="modal-overlay" hidden>
     <div class="modal-box donate-box">
       <div class="modal-title">☕ 커피 한 잔 후원하기</div>
-      <p class="donate-text">메모함은 무료로 쓸 수 있어요.<br />도움이 되셨다면 커피 한 잔으로 응원해 주세요.</p>
+      <p class="donate-text">빼꼬미는 무료로 쓸 수 있어요.<br />도움이 되셨다면 커피 한 잔으로 응원해 주세요.</p>
       <img class="donate-qr" src="donate-qr.png" alt="Buy Me a Coffee QR 코드" />
       <a class="donate-link" href="https://www.buymeacoffee.com/kdwikorea" target="_blank" rel="noopener">buymeacoffee.com/kdwikorea</a>
       <div class="modal-actions">

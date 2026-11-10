@@ -4,7 +4,7 @@ html, body {
   height: 100%;
   background: transparent;
   overflow: hidden;
-  font-family: "Segoe UI", "Malgun Gothic", system-ui, sans-serif;
+  font-family: "Noto Sans KR", "Malgun Gothic", "Segoe UI", system-ui, sans-serif;
   user-select: none;
 }
 
@@ -47,8 +47,8 @@ html, body {
 .tab {
   flex: 0 0 auto;
   height: 92px;
-  border-radius: 16px 0 0 16px;
-  box-shadow: -2px 2px 8px rgba(0, 0, 0, 0.25);
+  border-radius: 20px 0 0 20px;
+
   display: flex;
   align-items: center;
   justify-content: center;
@@ -87,25 +87,25 @@ html, body {
   opacity: 0.4;
 }
 .tab.drag-over-top {
-  box-shadow: 0 -3px 0 0 #b5652b, -2px 2px 8px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 -3px 0 0 #FFC94D;
 }
 .tab.drag-over-bottom {
-  box-shadow: 0 3px 0 0 #b5652b, -2px 2px 8px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 3px 0 0 #FFC94D;
 }
 
 .tab-add {
   flex: 0 0 auto;
   height: 34px;
-  border-radius: 16px 0 0 16px;
+  border-radius: 12px 0 0 12px;
   background: rgba(255, 255, 255, 0.92);
-  box-shadow: -2px 2px 8px rgba(0, 0, 0, 0.2);
+
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   font-size: 18px;
   font-weight: 700;
-  color: #b5652b;
+  color: #1F2A44;
 }
 .tab-add:hover {
   background: #fff;
@@ -118,9 +118,9 @@ html, body {
   width: 300px;
   height: 100%;
   box-sizing: border-box;
-  background: #fffaf0;
-  border-radius: 12px 0 0 12px;
-  box-shadow: -4px 4px 18px rgba(0, 0, 0, 0.32);
+  background: #ffffff;
+  border-radius: 20px 0 0 20px;
+
   display: flex;
   flex-direction: column;
   padding: 10px 16px 14px;
@@ -174,7 +174,7 @@ html, body {
   min-width: 0;
   font-size: 15px;
   font-weight: 700;
-  color: #3b2f22;
+  color: #1F2A44;
   border: none;
   background: transparent;
   padding: 2px;
@@ -182,7 +182,7 @@ html, body {
 .panel-title-input:focus {
   outline: none;
   background: rgba(0, 0, 0, 0.04);
-  border-radius: 4px;
+  border-radius: 6px;
 }
 
 .pin-btn {
@@ -191,12 +191,12 @@ html, body {
   right: -8px;
   width: 26px;
   height: 26px;
-  border: 2px solid #fffaf0;
+  border: 2px solid #ffffff;
   background: #fff;
   font-size: 13px;
   cursor: pointer;
   border-radius: 50%;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+
   opacity: 0.55;
   filter: grayscale(1);
   transform: rotate(35deg);
@@ -211,7 +211,7 @@ html, body {
 .pin-btn.active {
   opacity: 1;
   filter: none;
-  background: rgba(181, 101, 43, 0.15);
+  background: rgba(255, 201, 77, 0.33);
   transform: rotate(0deg);
 }
 
@@ -242,8 +242,8 @@ html, body {
   background: rgba(0, 0, 0, 0.12);
 }
 .panel-page-tab.active {
-  background: #b5652b;
-  color: #fff;
+  background: #FFC94D;
+  color: #1F2A44;
   font-weight: 700;
 }
 
@@ -254,7 +254,7 @@ html, body {
   background: transparent;
   font-size: 13px;
   line-height: 1.6;
-  color: #4a3d2c;
+  color: #1F2A44;
   font-family: inherit;
   padding: 4px 2px;
 }
@@ -263,7 +263,7 @@ html, body {
 }
 .panel-body-input:empty::before {
   content: attr(data-placeholder);
-  color: #8a7a5f;
+  color: #4A5468;
   opacity: 0.7;
   pointer-events: none;
 }
@@ -276,7 +276,7 @@ html, body {
   margin: 6px 0;
 }
 .panel-body-input table.note-table td {
-  border: 1px solid #d9c9a8;
+  border: 1px solid #E1E5EE;
   padding: 3px 8px;
 }
 .panel-body-input .chk-item {
@@ -331,7 +331,7 @@ html, body {
   gap: 8px;
   padding-top: 8px;
   margin-top: 6px;
-  border-top: 1px solid #e3d5b8;
+  border-top: 1px solid #E1E5EE;
 }
 
 .panel-mini-toolbar {
@@ -344,11 +344,11 @@ html, body {
   flex: 0 0 auto;
   width: 22px;
   height: 22px;
-  border: 1px solid #e3d5b8;
+  border: 1px solid #E1E5EE;
   background: #fff;
-  border-radius: 5px;
+  border-radius: 6px;
   font-size: 12px;
-  color: #4a3d2c;
+  color: #1F2A44;
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -356,33 +356,33 @@ html, body {
   padding: 0;
 }
 .mini-btn:hover {
-  background: #f4ede0;
+  background: #eef1f7;
 }
 .mini-select {
   flex: 0 0 auto;
   max-width: 64px;
   height: 22px;
-  border: 1px solid #e3d5b8;
+  border: 1px solid #E1E5EE;
   background: #fff;
-  border-radius: 5px;
+  border-radius: 6px;
   font-size: 10.5px;
-  color: #4a3d2c;
+  color: #1F2A44;
   padding: 0 2px;
 }
 
 .panel-save-status {
   flex: 1;
   font-size: 11px;
-  color: #8a7a5f;
+  color: #4A5468;
 }
 
 .panel-btn {
   flex: 0 0 auto;
   padding: 7px 12px;
   border: none;
-  border-radius: 8px;
-  background: #b5652b;
-  color: #fff;
+  border-radius: 6px;
+  background: #FFC94D;
+  color: #1F2A44;
   font-weight: 700;
   font-size: 12.5px;
   cursor: pointer;
@@ -392,7 +392,7 @@ html, body {
 }
 .panel-btn-danger {
   flex: 0 0 auto;
-  background: #f0e6d0;
+  background: #e9edf5;
   color: #b3402f;
   padding: 7px 10px;
 }
@@ -406,13 +406,13 @@ html, body {
 .sched-title {
   font-size: 15px;
   font-weight: 700;
-  color: #3b2f22;
+  color: #1F2A44;
 }
 .sched-today {
   flex: 1;
   text-align: right;
   font-size: 12px;
-  color: #8a7a5f;
+  color: #4A5468;
   margin-right: 14px;
 }
 .sched-list {
@@ -425,7 +425,7 @@ html, body {
   margin: 8px 0 3px;
   font-size: 11px;
   font-weight: 700;
-  color: #8a7a5f;
+  color: #4A5468;
   letter-spacing: 0.3px;
 }
 .sched-section:first-child {
@@ -434,7 +434,7 @@ html, body {
 .sched-empty {
   padding: 10px 2px;
   font-size: 12.5px;
-  color: #9a8a70;
+  color: #6b7488;
 }
 .sched-row {
   position: relative;
@@ -443,9 +443,9 @@ html, body {
   gap: 7px;
   margin-bottom: 4px;
   padding: 5px 7px 5px 12px;
-  border-radius: 7px;
+  border-radius: 6px;
   background: #fff;
-  border: 1px solid #eadfc6;
+  border: 1px solid #E1E5EE;
   cursor: pointer;
   font-size: 12.5px;
 }
@@ -460,7 +460,7 @@ html, body {
   background: var(--c, #a7c8ec);
 }
 .sched-row:hover {
-  background: #fbf5e8;
+  background: #f4f6fb;
 }
 .sched-row.past {
   opacity: 0.5;
@@ -470,7 +470,7 @@ html, body {
   min-width: 38px;
   font-size: 11.5px;
   font-weight: 700;
-  color: #6b5c48;
+  color: #4A5468;
 }
 .sched-name {
   flex: 1;
@@ -479,7 +479,7 @@ html, body {
   text-overflow: ellipsis;
   white-space: nowrap;
   font-weight: 600;
-  color: #3b2f22;
+  color: #1F2A44;
 }
 .sched-icons {
   flex: 0 0 auto;
@@ -494,30 +494,30 @@ html, body {
   gap: 6px;
   padding-top: 8px;
   margin-top: 4px;
-  border-top: 1px solid #e3d5b8;
+  border-top: 1px solid #E1E5EE;
   user-select: text;
 }
 .qa-title,
 .qa-time {
   min-width: 0;
   padding: 6px 8px;
-  border: 1px solid #e3d5b8;
-  border-radius: 7px;
+  border: 1px solid #E1E5EE;
+  border-radius: 6px;
   background: #fff;
   font-size: 12.5px;
   font-family: inherit;
-  color: #3b2f22;
+  color: #1F2A44;
 }
 .qa-title:focus,
 .qa-time:focus {
-  outline: 2px solid rgba(181, 101, 43, 0.35);
-  border-color: #b5652b;
+  outline: 2px solid rgba(255, 201, 77, 0.77);
+  border-color: #1F2A44;
 }
 .qa-preview {
   padding: 2px 8px;
   font-size: 11.5px;
   font-weight: 700;
-  color: #8a4a1d;
+  color: #1F2A44;
 }
 .qa-preview[hidden] {
   display: none;
@@ -543,17 +543,17 @@ html, body {
 .qa-day {
   flex: 1;
   padding: 5px 0;
-  border: 1px solid #e3d5b8;
-  border-radius: 7px;
+  border: 1px solid #E1E5EE;
+  border-radius: 6px;
   background: #fff;
   font-size: 11.5px;
-  color: #4a3d2c;
+  color: #1F2A44;
   cursor: pointer;
 }
 .qa-day.on {
-  background: #b5652b;
-  border-color: #b5652b;
-  color: #fff;
+  background: #FFC94D;
+  border-color: #FFC94D;
+  color: #1F2A44;
   font-weight: 700;
 }
 .qa-time {

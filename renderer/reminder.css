@@ -1,9 +1,9 @@
 html, body {
   margin: 0;
   height: 100%;
-  background: #fffaf0;
-  font-family: "Segoe UI", "Malgun Gothic", system-ui, sans-serif;
-  color: #3b2f22;
+  background: #ffffff;
+  font-family: "Noto Sans KR", "Malgun Gothic", "Segoe UI", system-ui, sans-serif;
+  color: #1F2A44;
   overflow: hidden;
   user-select: none;
 }
@@ -13,8 +13,8 @@ html, body {
   height: 100%;
   display: flex;
   flex-direction: column;
-  border: 2px solid #b5652b;
-  border-radius: 10px;
+  border: 1px solid #1F2A44;
+  border-radius: 20px;
   overflow: hidden;
 }
 
@@ -25,8 +25,8 @@ html, body {
   align-items: center;
   justify-content: space-between;
   padding: 0 14px;
-  background: #b5652b;
-  color: #fff;
+  background: #1F2A44;
+  color: #ffffff;
   font-weight: 700;
   font-size: 14px;
   -webkit-app-region: drag;
@@ -43,8 +43,8 @@ html, body {
   position: relative;
   padding: 8px 10px 9px 14px;
   margin-bottom: 8px;
-  border: 1px solid #e3d5b8;
-  border-radius: 8px;
+  border: 1px solid #E1E5EE;
+  border-radius: 6px;
   background: #fff;
 }
 .item::before {
@@ -64,13 +64,13 @@ html, body {
 .when {
   margin-top: 2px;
   font-size: 12px;
-  color: #6b5c48;
+  color: #4A5468;
 }
 .tag {
   display: inline-block;
   margin-left: 6px;
   padding: 0 6px;
-  border-radius: 8px;
+  border-radius: 6px;
   background: #b3402f;
   color: #fff;
   font-size: 10.5px;
@@ -84,17 +84,17 @@ html, body {
 }
 
 .btn {
-  border: 1px solid #d9c9a8;
+  border: 1px solid #E1E5EE;
   background: #fff;
-  color: #3b2f22;
+  color: #1F2A44;
   padding: 4px 9px;
   border-radius: 6px;
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
 }
-.btn:hover { background: #f4ede0; }
-.btn.primary { background: #b5652b; border-color: #b5652b; color: #fff; }
+.btn:hover { background: #eef1f7; }
+.btn.primary { background: #FFC94D; border-color: #FFC94D; color: #1F2A44; }
 .btn.primary:hover { filter: brightness(1.08); }
 .btn.spacer { margin-left: auto; }
 

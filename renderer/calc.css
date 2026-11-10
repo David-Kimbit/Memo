@@ -1,9 +1,9 @@
 html, body {
   margin: 0;
   height: 100%;
-  background: #fffaf0;
-  font-family: "Segoe UI", "Malgun Gothic", system-ui, sans-serif;
-  color: #3b2f22;
+  background: #ffffff;
+  font-family: "Noto Sans KR", "Malgun Gothic", "Segoe UI", system-ui, sans-serif;
+  color: #1F2A44;
   user-select: none;
 }
 
@@ -17,9 +17,9 @@ html, body {
 }
 
 #calcDisplay {
-  background: #2a2117;
-  color: #f4ede0;
-  border-radius: 10px;
+  background: #1F2A44;
+  color: #eef1f7;
+  border-radius: 12px;
   padding: 12px 14px 8px;
   text-align: right;
 }
@@ -49,7 +49,7 @@ html, body {
   flex: 0 0 auto;
   border: none;
   background: rgba(255, 255, 255, 0.1);
-  color: #f4ede0;
+  color: #eef1f7;
   border-radius: 6px;
   font-size: 14px;
   padding: 4px 7px;
@@ -65,7 +65,7 @@ html, body {
 
 .calc-memory {
   font-size: 11px;
-  color: #8a7a5f;
+  color: #4A5468;
   min-height: 14px;
   text-align: right;
   padding-right: 4px;
@@ -81,31 +81,31 @@ html, body {
 
 .calc-btn {
   border: none;
-  border-radius: 8px;
+  border-radius: 6px;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  background: #f4ede0;
-  color: #3b2f22;
+  background: #eef1f7;
+  color: #1F2A44;
 }
 .calc-btn:hover {
-  background: #ecdfc4;
+  background: #E1E5EE;
 }
 .calc-btn:active {
   filter: brightness(0.95);
 }
 
 .calc-btn.fn {
-  background: #e7dcc0;
+  background: #E1E5EE;
   font-size: 12px;
 }
 .calc-btn.op {
-  background: #d9b98f;
-  color: #3b2417;
+  background: #E1E5EE;
+  color: #1F2A44;
 }
 .calc-btn.eq {
-  background: #b5652b;
-  color: #fff;
+  background: #FFC94D;
+  color: #1F2A44;
   grid-row: span 1;
 }
 .calc-btn.clear {

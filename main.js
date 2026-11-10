@@ -433,7 +433,7 @@ function updateTrayMenu() {
   if (!tray) return;
   const isVisible = !!widgetWindow && widgetWindow.isVisible();
   const menu = Menu.buildFromTemplate([
-    { label: '메모함 열기', click: () => openMain() },
+    { label: '빼꼬미 열기', click: () => openMain() },
     { label: '📅 일정 달력', click: () => schedule.openCalendar({ type: 'show' }) },
     { label: '계산기', click: () => openCalculator() },
     { type: 'separator' },
@@ -460,9 +460,9 @@ function updateTrayMenu() {
 }
 
 function createTray() {
-  const icon = nativeImage.createFromPath(path.join(__dirname, 'assets', 'icon.png'));
-  tray = new Tray(icon.resize({ width: 16, height: 16 }));
-  tray.setToolTip('메모함');
+  const icon = nativeImage.createFromPath(path.join(__dirname, 'assets', 'tray.png'));
+  tray = new Tray(icon); // tray.png + tray@2x.png: Electron picks the size for the display scale
+  tray.setToolTip('빼꼬미');
   updateTrayMenu();
   tray.on('click', () => openMain());
 }

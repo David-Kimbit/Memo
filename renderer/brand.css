@@ -1,0 +1,97 @@
+/* 빼꼬미 Peekomi — brand layer, loaded after each window's own stylesheet.
+   navy = headers/tabs, memo-yellow = emphasis + selected state (text on it is
+   always navy), no shadows (separation comes from lines and fills). */
+:root {
+  --navy: #1F2A44;
+  --memo-yellow: #FFC94D;
+  --memo-yellow-soft: #FFF1CC;
+  --surface: #F7F8FB;
+  --surface-raised: #FFFFFF;
+  --ink: #1F2A44;
+  --ink-muted: #4A5468;
+  --line: #E1E5EE;
+  --font-sans: "Noto Sans KR", "Malgun Gothic", "Segoe UI", system-ui, sans-serif;
+  --font-display: "Jua", "Noto Sans KR", "Malgun Gothic", sans-serif;
+}
+
+.brand-logo {
+  font-family: var(--font-display);
+  font-weight: 400;
+  letter-spacing: 0.3px;
+}
+
+/* control borders use ink-muted so they stay visible on white */
+input:not([type="checkbox"]):not([type="radio"]):not([type="color"]):not([type="file"]),
+select,
+textarea {
+  border-color: var(--ink-muted);
+}
+input::placeholder,
+textarea::placeholder {
+  color: #6b7488;
+}
+
+/* ----- main window ----- */
+/* the icon's own background is navy, so the header stays light to keep the logo whole */
+.topbar {
+  background: var(--surface-raised);
+  border-bottom: 1px solid var(--line);
+}
+.app-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--navy);
+  font-size: 22px;
+}
+.app-logo {
+  width: 32px;
+  height: 32px;
+  display: block;
+}
+.btn.primary {
+  background: var(--memo-yellow);
+  border-color: var(--memo-yellow);
+  color: var(--navy);
+}
+
+/* ----- calendar window ----- */
+.cal-head {
+  background: var(--navy);
+  border-bottom: 0;
+  color: #ffffff;
+}
+.cal-head .month-title,
+.cal-head .icon-btn {
+  color: #ffffff;
+}
+.cal-head .icon-btn:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+.cal-head .icon-btn.pin {
+  filter: grayscale(1) brightness(2);
+}
+.cal-head .icon-btn.pin.active {
+  filter: none;
+  background: var(--memo-yellow);
+}
+.cal-head .today-btn,
+.cal-head .lunar-toggle {
+  background: #ffffff;
+  border-color: #ffffff;
+  color: var(--navy);
+}
+.cal-head .lunar-toggle.active {
+  background: var(--memo-yellow);
+  border-color: var(--memo-yellow);
+}
+
+/* ----- widget ----- */
+.tab.tab-sched {
+  background: var(--navy);
+  color: #ffffff;
+}
+.panel {
+  border: 1px solid var(--line);
+  border-right: 0;
+}
