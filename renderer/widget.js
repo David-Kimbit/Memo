@@ -148,6 +148,7 @@
     els.panel.classList.add('visible');
     if (!expanded) {
       expanded = true;
+      els.widget.classList.add('open');
       window.api.setWidgetExpanded(true);
     }
   }
@@ -157,6 +158,7 @@
     expanded = false;
     activeFolderId = null;
     els.panel.classList.remove('visible');
+    els.widget.classList.remove('open');
     window.api.setWidgetExpanded(false);
   }
 
@@ -362,7 +364,15 @@
     clearTimeout(leaveTimer);
     expanded = false;
     activeFolderId = null;
+    els.widget.classList.remove('open');
     els.panel.classList.remove('visible');
+  });
+
+  // After the widget hops to another monitor it nudges in from the edge.
+  window.api.onArrive(() => {
+    els.widget.classList.remove('arrive');
+    void els.widget.offsetWidth; // restart the animation if it is already running
+    els.widget.classList.add('arrive');
   });
 
   els.panelEditBtn.addEventListener('click', () => {

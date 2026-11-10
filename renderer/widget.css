@@ -25,6 +25,23 @@ html, body {
   gap: 4px;
   padding: 4px 0;
   box-sizing: border-box;
+  /* The window is always full width; at rest the strip is pushed off the
+     right edge so only an 8px sliver shows, and sliding it in is a
+     compositor-only transform — resizing the window itself 60 times a second
+     is what made the old reveal stutter on Windows. */
+  transform: translateX(26px);
+  transition: transform 0.38s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+#widget.open .tabs {
+  transform: translateX(0);
+}
+#widget.arrive .tabs {
+  animation: widget-arrive 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}
+@keyframes widget-arrive {
+  from { transform: translateX(34px); }
+  to { transform: translateX(26px); }
 }
 
 .tab {
@@ -46,15 +63,15 @@ html, body {
   text-overflow: ellipsis;
 }
 
-/* At rest the window is only NUB_W(8px) wide, so almost none of the
-   34px-wide tab is on-screen — just a hint of color peeks out. */
-@media (max-width: 20px) {
-  .tab {
-    color: transparent;
-  }
-  .tab-add {
-    font-size: 0;
-  }
+/* At rest only 8px of each tab is on-screen — just a hint of color — so the
+   labels are hidden until the strip slides open. */
+#widget:not(.open) .tab,
+#widget:not(.open) .tab-add {
+  color: transparent;
+}
+.tab,
+.tab-add {
+  transition: color 0.2s ease, background 0.2s ease;
 }
 
 .tab.dragging {
@@ -99,11 +116,15 @@ html, body {
   flex-direction: column;
   padding: 10px 16px 14px;
   opacity: 0;
-  transition: opacity 0.15s ease;
+  transform: translateX(40px) scale(0.98);
+  transform-origin: right center;
+  transition: opacity 0.24s ease, transform 0.38s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform, opacity;
   pointer-events: none;
 }
 .panel.visible {
   opacity: 1;
+  transform: translateX(0) scale(1);
   pointer-events: auto;
 }
 

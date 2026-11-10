@@ -92,7 +92,11 @@
 
   // Page content is stored as HTML (rich text); previews/search need the
   // plain-text version so tags never leak into a summary line.
-  const stripHtmlScratch = document.createElement('div');
+  // Built in a document that is never attached to the page: innerHTML on an
+  // element of the live document would start loading images and run inline
+  // handlers just to produce a preview line.
+  const scratchDoc = document.implementation.createHTMLDocument('');
+  const stripHtmlScratch = scratchDoc.createElement('div');
 
   // Bullet/number markers are pure CSS ::before content and a checkbox's
   // checked state lives only in a DOM property — neither is part of
@@ -1336,10 +1340,11 @@
     if (!page.attachments) page.attachments = [];
     for (const file of files) {
       try {
-        const meta = await window.api.addAttachment(file.path, file.name);
+        const meta = await window.api.addAttachment(window.api.pathForFile(file), file.name);
         page.attachments.push(meta);
       } catch (err) {
-        alert(`"${file.name}" 첨부에 실패했습니다.`);
+        const reason = String((err && err.message) || '').replace(/^Error invoking remote method '[^']*': (Error: )?/, '');
+        alert(`"${file.name}" 첨부에 실패했습니다.${reason ? '\n' + reason : ''}`);
       }
     }
     page.updatedAt = nowIso();

@@ -16,15 +16,16 @@ const BACKUP_INTERVAL_MS = 5 * 60 * 1000;
 const MAX_BACKUPS = 40;
 let lastBackupTime = 0;
 
-const NUB_W = 8; // barely-visible resting sliver, no labels
 const STRIP_W = 34; // tab column width once revealed
 const PANEL_W = 300; // quick-edit panel width
-const FULL_W = STRIP_W + PANEL_W;
+const FULL_W = STRIP_W + PANEL_W; // the widget window is always this wide
 const TAB_H = 92;
 const TAB_GAP = 4;
 const ADD_TAB_H = 34;
-const FPS = 60;
-const FRAME_MS = Math.round(1000 / FPS);
+const MAX_ATTACHMENT_BYTES = 200 * 1024 * 1024;
+// Attachments open with the default app, which for these would run them —
+// show them in Explorer instead so opening one is always a deliberate step.
+const BLOCKED_OPEN_EXT = new Set(['.exe', '.bat', '.cmd', '.com', '.scr', '.msi', '.ps1', '.psm1', '.vbs', '.vbe', '.js', '.jse', '.wsf', '.hta', '.lnk', '.reg', '.dll', '.jar', '.cpl']);
 
 function ensureData() {
   if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
@@ -127,7 +128,6 @@ let mainWindow = null;
 let calcWindow = null;
 let widgetWindow = null;
 let tray = null;
-let animTimer = null;
 let dragCurrentY = null;
 let widgetExpanded = false;
 let widgetPinned = false;
@@ -152,7 +152,10 @@ function computeHeight(wa) {
   return Math.min(Math.max(contentH, TAB_H + ADD_TAB_H + 20), wa.height - 24);
 }
 
-function getWidgetBounds(expanded) {
+// The window never changes size when the panel opens or closes — the slide is
+// a CSS transform inside it (see widget.css). It stays click-through while
+// idle, so the transparent area never blocks the app underneath.
+function getWidgetBounds() {
   const wa = getTargetDisplay().workArea;
   const height = computeHeight(wa);
   let y;
@@ -164,58 +167,41 @@ function getWidgetBounds(expanded) {
     y = wa.y + Math.round((wa.height - height) / 2);
   }
   y = Math.max(wa.y, Math.min(y, wa.y + wa.height - height));
-  const width = expanded ? FULL_W : NUB_W;
-  const x = wa.x + wa.width - width;
-  return { x, y, width, height };
+  return { x: wa.x + wa.width - FULL_W, y, width: FULL_W, height };
 }
 
-// Single time-based animation loop (progress from elapsed wall-clock time,
-// not a step counter) so motion stays smooth and correct even if the timer
-// itself drifts a little — ticking at a clean 60fps cadence.
-function runAnimation(from, to, duration) {
+// Moving between monitors with different scaling sometimes lands a few pixels
+// off on the first setBounds, so check the result and apply it again.
+function placeWidget() {
   if (!widgetWindow || widgetWindow.isDestroyed()) return;
-  clearInterval(animTimer);
-  const start = Date.now();
-  animTimer = setInterval(() => {
-    if (!widgetWindow || widgetWindow.isDestroyed()) {
-      clearInterval(animTimer);
-      return;
-    }
-    const t = Math.min((Date.now() - start) / duration, 1);
-    const ease = t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; // ease-in-out cubic
-    widgetWindow.setBounds({
-      x: Math.round(from.x + (to.x - from.x) * ease),
-      y: Math.round(from.y + (to.y - from.y) * ease),
-      width: Math.round(from.width + (to.width - from.width) * ease),
-      height: Math.round(from.height + (to.height - from.height) * ease),
-    });
-    if (t >= 1) {
-      clearInterval(animTimer);
-      animTimer = null;
-    }
-  }, FRAME_MS);
-}
-
-function animateWidget(expanded) {
-  if (!widgetWindow || widgetWindow.isDestroyed()) return;
-  const from = widgetWindow.getBounds();
-  const target = getWidgetBounds(expanded);
-  // Hover reveal only ever changes x/width — y/height stay put.
-  runAnimation(from, { x: target.x, y: from.y, width: target.width, height: from.height }, 220);
-}
-
-function moveToActiveDisplay() {
-  if (!widgetWindow || widgetWindow.isDestroyed()) return;
-  const from = widgetWindow.getBounds();
-  const target = getWidgetBounds(widgetExpanded);
-  runAnimation(from, target, 260);
+  const target = getWidgetBounds();
+  for (let i = 0; i < 3; i++) {
+    widgetWindow.setBounds(target);
+    const got = widgetWindow.getBounds();
+    if (got.x === target.x && got.y === target.y && got.width === target.width && got.height === target.height) break;
+  }
 }
 
 function refreshWidgetSize() {
+  placeWidget();
+}
+
+// Hop to the new monitor invisibly (so it never visibly flies across the
+// desktop), then nudge in from the edge once it has arrived.
+function moveToActiveDisplay() {
   if (!widgetWindow || widgetWindow.isDestroyed()) return;
-  const cur = widgetWindow.getBounds();
-  const wasExpanded = cur.width > NUB_W + 5;
-  widgetWindow.setBounds(getWidgetBounds(wasExpanded));
+  const visible = widgetWindow.isVisible();
+  widgetWindow.setOpacity(0);
+  placeWidget();
+  if (!visible) {
+    widgetWindow.setOpacity(1);
+    return;
+  }
+  setTimeout(() => {
+    if (!widgetWindow || widgetWindow.isDestroyed()) return;
+    widgetWindow.webContents.send('widget:arrive');
+    widgetWindow.setOpacity(1);
+  }, 80);
 }
 
 // A single lightweight poll (not one window per monitor) that relocates
@@ -230,7 +216,15 @@ function startDisplayWatch() {
       currentDisplayId = disp.id;
       moveToActiveDisplay();
     }
-  }, 1200);
+  }, 400);
+  // Plugging a monitor in/out or changing scaling re-seats the widget too.
+  const reseat = () => {
+    if (!screen.getAllDisplays().some((d) => d.id === currentDisplayId)) currentDisplayId = screen.getPrimaryDisplay().id;
+    moveToActiveDisplay();
+  };
+  screen.on('display-added', reseat);
+  screen.on('display-removed', reseat);
+  screen.on('display-metrics-changed', reseat);
 }
 
 // Transparent click-through windows can occasionally miss a DOM
@@ -242,14 +236,11 @@ function startWatchdog() {
   watchdogTimer = setInterval(() => {
     if (!widgetWindow || widgetWindow.isDestroyed() || widgetPinned) return;
     const pt = screen.getCursorScreenPoint();
-    // Check against the fully-expanded TARGET bounds, not the window's
-    // current (possibly still-animating) bounds. Using the live bounds
-    // made this fire mid-expand-animation whenever the mouse had already
-    // moved toward where the panel was about to appear — reading "outside"
-    // against the still-narrow window and force-collapsing, which made the
-    // tab's mouseenter fire again immediately: a rapid expand/collapse
-    // flicker loop.
-    const b = getWidgetBounds(true);
+    // The window is always full width, so its target bounds are the real
+    // bounds. (Back when it was resized to reveal the panel, checking the
+    // live mid-animation bounds here force-collapsed it while it was still
+    // opening — a rapid expand/collapse flicker.)
+    const b = getWidgetBounds();
     const margin = 6;
     const inside =
       pt.x >= b.x - margin && pt.x <= b.x + b.width + margin &&
@@ -265,7 +256,6 @@ function stopWatchdog() {
 
 function forceCollapse() {
   widgetExpanded = false;
-  animateWidget(false);
   if (widgetWindow) {
     widgetWindow.setIgnoreMouseEvents(true, { forward: true });
     widgetWindow.webContents.send('force-collapse');
@@ -281,8 +271,21 @@ function configureAutoLaunch(enable) {
   });
 }
 
+// Windows only ever show local pages: links open in the default browser and
+// anything that tries to navigate the window elsewhere (a dropped file, a
+// clicked link) is refused.
+function lockDown(win) {
+  win.webContents.setWindowOpenHandler(({ url }) => {
+    if (/^https?:\/\//i.test(url)) shell.openExternal(url);
+    return { action: 'deny' };
+  });
+  win.webContents.on('will-navigate', (e, url) => {
+    if (!url.startsWith('file://')) e.preventDefault();
+  });
+}
+
 function createWidgetWindow() {
-  const bounds = getWidgetBounds(false);
+  const bounds = getWidgetBounds();
   widgetWindow = new BrowserWindow({
     ...bounds,
     frame: false,
@@ -295,13 +298,15 @@ function createWidgetWindow() {
     thickFrame: false,
     minWidth: 1,
     minHeight: 1,
-    show: true,
+    show: !(cachedConfig && cachedConfig.hidden),
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
       nodeIntegration: false,
+      sandbox: true,
     },
   });
+  lockDown(widgetWindow);
   widgetWindow.setAlwaysOnTop(true, 'screen-saver');
   widgetWindow.setIgnoreMouseEvents(true, { forward: true });
   widgetWindow.loadFile(path.join(__dirname, 'renderer', 'widget.html'));
@@ -323,8 +328,10 @@ function ensureMainWindow() {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
       nodeIntegration: false,
+      sandbox: true,
     },
   });
+  lockDown(mainWindow);
   mainWindow.loadFile(path.join(__dirname, 'renderer', 'index.html'));
   mainWindow.on('closed', () => {
     mainWindow = null;
@@ -378,8 +385,10 @@ function openCalculator(value) {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
       nodeIntegration: false,
+      sandbox: true,
     },
   });
+  lockDown(calcWindow);
   calcWindow.loadFile(path.join(__dirname, 'renderer', 'calc.html'));
   calcWindow.webContents.once('did-finish-load', send);
   calcWindow.on('closed', () => {
@@ -528,7 +537,6 @@ if (!gotLock) {
     currentDisplayId = getActiveDisplay().id;
     configureAutoLaunch(cachedConfig.autoLaunch !== false);
     createWidgetWindow();
-    if (cachedConfig.hidden) widgetWindow.hide();
     createTray();
     startDisplayWatch();
 
@@ -544,6 +552,7 @@ app.on('window-all-closed', () => {
 
 ipcMain.handle('data:get', () => loadData());
 ipcMain.handle('data:save', (event, data) => {
+  if (!data || !Array.isArray(data.folders)) return { ok: false, error: '메모 데이터 형식이 올바르지 않습니다' };
   let ok = true;
   let error = null;
   try {
@@ -568,7 +577,6 @@ ipcMain.handle('data:save', (event, data) => {
 
 ipcMain.on('widget:hover', (event, expanded) => {
   widgetExpanded = expanded;
-  animateWidget(expanded);
   // Tie click-through directly to the same signal that expands/collapses
   // the panel, so it can never be visibly open with clicks still passing
   // through to whatever is behind it (mouseenter/mouseleave on a
@@ -614,18 +622,33 @@ ipcMain.on('widget:new-folder', () => openMainForNewFolder());
 ipcMain.on('open-calculator', () => openCalculator());
 ipcMain.on('send-to-calculator', (event, value) => openCalculator(value));
 
-ipcMain.handle('attachment:add', (event, { sourcePath, name }) => {
+// Attachment names come from the renderer, so never let one point outside
+// the attachments folder.
+function storedPath(storedName) {
+  if (typeof storedName !== 'string' || !storedName || storedName !== path.basename(storedName) || storedName.startsWith('.')) return null;
+  return path.join(attachmentsDir, storedName);
+}
+
+ipcMain.handle('attachment:add', (event, { sourcePath, name } = {}) => {
+  if (typeof sourcePath !== 'string' || !sourcePath) throw new Error('첨부할 파일을 찾을 수 없습니다');
+  const st = fs.statSync(sourcePath);
+  if (!st.isFile()) throw new Error('파일만 첨부할 수 있습니다');
+  if (st.size > MAX_ATTACHMENT_BYTES) throw new Error('200MB 보다 큰 파일은 첨부할 수 없습니다');
   ensureData();
-  const safeName = path.basename(name || path.basename(sourcePath));
+  const safeName = path.basename(String(name || path.basename(sourcePath))).replace(/[\\/:*?"<>|]/g, '_');
   const storedName = `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 7)}_${safeName}`;
-  const destPath = path.join(attachmentsDir, storedName);
-  fs.copyFileSync(sourcePath, destPath);
-  const stat = fs.statSync(destPath);
-  return { storedName, name: safeName, size: stat.size };
+  fs.copyFileSync(sourcePath, path.join(attachmentsDir, storedName));
+  return { storedName, name: safeName, size: st.size };
 });
 
 ipcMain.on('attachment:open', (event, storedName) => {
-  shell.openPath(path.join(attachmentsDir, storedName));
+  const p = storedPath(storedName);
+  if (!p || !fs.existsSync(p)) return;
+  if (BLOCKED_OPEN_EXT.has(path.extname(p).toLowerCase())) {
+    shell.showItemInFolder(p);
+    return;
+  }
+  shell.openPath(p);
 });
 
 const IMAGE_MIME_BY_EXT = {
@@ -638,17 +661,16 @@ const IMAGE_MIME_BY_EXT = {
 };
 
 ipcMain.handle('attachment:read-data-url', (event, storedName) => {
-  const p = path.join(attachmentsDir, storedName);
-  const mime = IMAGE_MIME_BY_EXT[path.extname(storedName).toLowerCase()];
+  const p = storedPath(storedName);
+  const mime = p && IMAGE_MIME_BY_EXT[path.extname(p).toLowerCase()];
   if (!mime || !fs.existsSync(p)) return null;
-  const buf = fs.readFileSync(p);
-  return `data:${mime};base64,${buf.toString('base64')}`;
+  return `data:${mime};base64,${fs.readFileSync(p).toString('base64')}`;
 });
 
 ipcMain.handle('attachment:remove', (event, storedName) => {
-  const p = path.join(attachmentsDir, storedName);
+  const p = storedPath(storedName);
   try {
-    if (fs.existsSync(p)) fs.unlinkSync(p);
+    if (p && fs.existsSync(p)) fs.unlinkSync(p);
   } catch (e) {
     // already gone — fine
   }

@@ -1,4 +1,4 @@
-const { contextBridge, ipcRenderer } = require('electron');
+const { contextBridge, ipcRenderer, webUtils } = require('electron');
 
 contextBridge.exposeInMainWorld('api', {
   getData: () => ipcRenderer.invoke('data:get'),
@@ -13,6 +13,8 @@ contextBridge.exposeInMainWorld('api', {
   dragEnd: () => ipcRenderer.send('widget:drag-end'),
   setPinned: (pinned) => ipcRenderer.send('widget:set-pinned', pinned),
   onForceCollapse: (cb) => ipcRenderer.on('force-collapse', cb),
+  onArrive: (cb) => ipcRenderer.on('widget:arrive', () => cb()),
+  pathForFile: (file) => webUtils.getPathForFile(file),
   openCalculator: () => ipcRenderer.send('open-calculator'),
   sendToCalculator: (value) => ipcRenderer.send('send-to-calculator', value),
   onLoadValue: (cb) => ipcRenderer.on('load-value', (event, value) => cb(value)),
