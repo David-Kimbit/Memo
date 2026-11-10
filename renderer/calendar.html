@@ -14,6 +14,7 @@
       <button id="nextBtn" class="icon-btn" title="다음 달">›</button>
       <button id="todayBtn" class="today-btn">오늘</button>
       <span class="spacer"></span>
+      <button id="lunarBtn" class="today-btn lunar-toggle" title="날짜 아래에 음력 표시">음력</button>
       <button id="pinBtn" class="icon-btn pin" title="항상 위에 표시">📌</button>
       <button id="closeBtn" class="icon-btn" title="닫기">✕</button>
     </header>
@@ -42,6 +43,18 @@
           <label class="lbl">날짜</label>
           <input id="fDate" type="date" class="field grow" />
           <label class="check"><input id="fAllDay" type="checkbox" /> 종일</label>
+        </div>
+        <div class="row">
+          <label class="lbl">음력</label>
+          <span id="lunarHint" class="hint grow"></span>
+          <button id="lunarOpenBtn" type="button" class="btn small" title="음력 날짜를 입력해서 양력으로 바꿔요">음력으로 입력</button>
+        </div>
+        <div class="row" id="lunarRow" hidden>
+          <label class="lbl"></label>
+          <select id="fLunarMonth" class="field"></select>
+          <select id="fLunarDay" class="field"></select>
+          <label class="check"><input id="fLunarLeap" type="checkbox" /> 윤달</label>
+          <button id="lunarApplyBtn" type="button" class="btn small primary" title="오늘 이후 가장 가까운 날짜로 맞춰요">적용</button>
         </div>
         <div class="row" id="timeRow">
           <label class="lbl">시간</label>

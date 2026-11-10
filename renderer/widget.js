@@ -26,6 +26,7 @@
     schedDragHandle: document.getElementById('schedDragHandle'),
     quickAdd: document.getElementById('quickAdd'),
     qaTitle: document.getElementById('qaTitle'),
+    qaPreview: document.getElementById('qaPreview'),
     qaTime: document.getElementById('qaTime'),
     qaDays: document.getElementById('qaDays'),
     dragHandle: document.getElementById('dragHandle'),
@@ -251,7 +252,11 @@
   // survives a refresh.
   function renderSchedule() {
     const today = S.toYmd(new Date());
+    const holiday = S.holidayName(today);
     els.schedToday.textContent = S.dateLabel(today);
+    els.schedToday.title = S.lunarLabel(today);
+    els.schedToday.classList.toggle('sched-holiday', !!holiday);
+    if (holiday) els.schedToday.textContent += ' · ' + holiday;
     const list = els.schedList;
     list.innerHTML = '';
 
@@ -300,27 +305,54 @@
     return S.pad2(h) + ':' + S.pad2(mi);
   }
 
+  function chipDate() {
+    const base = new Date();
+    base.setDate(base.getDate() + quickDayOffset);
+    return S.toYmd(base);
+  }
+
+  // What would be added right now. Dates and times written in the sentence
+  // ("내일 오후 3시 회의") win over the day chips and the time box.
+  function resolveQuick() {
+    const parsed = S.parseQuick(els.qaTitle.value);
+    const fieldTime = parseTimeInput(els.qaTime.value);
+    return {
+      parsed,
+      title: parsed.title,
+      date: parsed.date || chipDate(),
+      time: parsed.time !== null ? parsed.time : fieldTime, // null = unreadable box
+    };
+  }
+
+  function updateQuickPreview() {
+    const r = resolveQuick();
+    if (!r.parsed.matched) {
+      els.qaPreview.hidden = true;
+      return;
+    }
+    els.qaPreview.hidden = false;
+    els.qaPreview.textContent = '→ ' + S.dateLabel(r.date) + ' ' + (r.time || '종일') + ' · ' + (r.title || '(제목을 적어 주세요)');
+  }
+
   async function submitQuickAdd() {
-    const title = els.qaTitle.value.trim();
-    if (!title) {
+    const r = resolveQuick();
+    if (!r.title) {
+      if (r.parsed.matched) flashSchedStatus('일정 제목도 같이 적어 주세요', true);
       els.qaTitle.focus();
       return;
     }
-    const time = parseTimeInput(els.qaTime.value);
-    els.qaTime.classList.toggle('invalid', time === null);
-    if (time === null) {
+    els.qaTime.classList.toggle('invalid', r.time === null);
+    if (r.time === null) {
       flashSchedStatus('시간은 14:30 처럼 입력해 주세요', true);
       els.qaTime.focus();
       return;
     }
-    const base = new Date();
-    base.setDate(base.getDate() + quickDayOffset);
     const res = await window.api.upsertEvent({
-      title,
-      date: S.toYmd(base),
-      time,
+      title: r.title,
+      date: r.date,
+      time: r.time,
       repeat: 'none',
-      remind: time ? [5] : [0],
+      remind: r.time ? [5] : [0],
     });
     if (!res || !res.ok) {
       flashSchedStatus((res && res.error) || '추가하지 못했어요', true);
@@ -328,7 +360,8 @@
     }
     els.qaTitle.value = '';
     els.qaTime.value = '';
-    flashSchedStatus('추가됨');
+    updateQuickPreview();
+    flashSchedStatus(S.relativeDayLabel(r.date, S.toYmd(new Date())) + ' ' + (r.time || '종일') + ' 추가됨');
     await loadEvents();
   }
 
@@ -336,12 +369,17 @@
     e.preventDefault();
     submitQuickAdd();
   });
-  els.qaTime.addEventListener('input', () => els.qaTime.classList.remove('invalid'));
+  els.qaTitle.addEventListener('input', updateQuickPreview);
+  els.qaTime.addEventListener('input', () => {
+    els.qaTime.classList.remove('invalid');
+    updateQuickPreview();
+  });
   els.qaDays.addEventListener('click', (e) => {
     const btn = e.target.closest('.qa-day');
     if (!btn) return;
     quickDayOffset = Number(btn.dataset.off);
     els.qaDays.querySelectorAll('.qa-day').forEach((b) => b.classList.toggle('on', b === btn));
+    updateQuickPreview();
   });
   els.schedOpenBtn.addEventListener('click', () => window.api.openCalendar({ type: 'show' }));
 

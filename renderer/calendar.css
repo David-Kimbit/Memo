@@ -113,6 +113,33 @@ button { font-family: inherit; }
 }
 .day:hover { background: rgba(0, 0, 0, 0.05); }
 .day.other { opacity: 0.38; }
+.day.holiday { background: rgba(192, 70, 58, 0.08); }
+.day.holiday:not(.today) .num { color: var(--sun); font-weight: 700; }
+.day.holiday.selected { background: rgba(181, 101, 43, 0.12); }
+.lunar {
+  position: absolute;
+  top: 2px;
+  right: 3px;
+  font-size: 8.5px;
+  line-height: 1;
+  color: #9a8a70;
+  pointer-events: none;
+}
+.lunar.first { color: var(--accent); font-weight: 700; }
+.lunar-toggle.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+.ag-holiday {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 5px;
+  padding: 5px 10px;
+  border-radius: 8px;
+  background: rgba(192, 70, 58, 0.1);
+  color: var(--sun);
+  font-size: 12.5px;
+  font-weight: 700;
+}
+.agenda-sub { font-size: 11.5px; font-weight: 600; color: var(--ink-soft); margin-left: 6px; }
 .day.sun .num { color: var(--sun); }
 .day.sat .num { color: var(--sat); }
 .day.today .num {
@@ -271,6 +298,7 @@ button { font-family: inherit; }
 .dash { color: var(--ink-soft); }
 .check { display: flex; align-items: center; gap: 4px; font-size: 12.5px; white-space: nowrap; cursor: pointer; }
 .hint { font-size: 11.5px; color: #8a7a5f; }
+.hint.grow { flex: 1; min-width: 0; }
 .hint.pad { padding-left: 61px; margin-top: -4px; }
 .remind-list { display: flex; flex-wrap: wrap; gap: 5px 8px; }
 .remind-list label {

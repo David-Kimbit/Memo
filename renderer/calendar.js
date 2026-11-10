@@ -44,10 +44,23 @@
     folder: $('fFolder'),
     openFolderBtn: $('openFolderBtn'),
     note: $('fNote'),
+    lunarHint: $('lunarHint'),
+    lunarRow: $('lunarRow'),
+    lunarMonth: $('fLunarMonth'),
+    lunarDay: $('fLunarDay'),
+    lunarLeap: $('fLunarLeap'),
+    lunarBtn: $('lunarBtn'),
     error: $('editorError'),
     deleteOne: $('deleteOneBtn'),
     del: $('deleteBtn'),
   };
+
+  let showLunar = true;
+  try {
+    showLunar = localStorage.getItem('calShowLunar') !== '0';
+  } catch (e) {
+    // storage can be unavailable; the default is fine
+  }
 
   const today = () => S.toYmd(new Date());
   const folderById = (id) => folders.find((f) => f.id === id) || null;
@@ -70,9 +83,11 @@
       const d = new Date(viewYear, viewMonth, 1 - first.getDay() + i);
       const ymd = S.toYmd(d);
       const items = S.eventsOn(events, ymd);
+      const holiday = S.holidayName(ymd);
       const cell = document.createElement('button');
       cell.type = 'button';
       cell.className = 'day' +
+        (holiday ? ' holiday' : '') +
         (d.getMonth() !== viewMonth ? ' other' : '') +
         (ymd === t ? ' today' : '') +
         (ymd === selected ? ' selected' : '') +
@@ -95,7 +110,18 @@
         dots.appendChild(more);
       }
       cell.append(num, dots);
-      if (items.length) cell.title = items.map((o) => S.timeLabel(o.event) + ' ' + o.event.title).join('\n');
+      const lunar = showLunar ? S.lunarOf(ymd) : null;
+      if (lunar) {
+        const lu = document.createElement('span');
+        lu.className = 'lunar' + (lunar.day === 1 ? ' first' : '');
+        lu.textContent = lunar.day === 1 ? (lunar.leap ? '윤' : '') + lunar.month + '월' : String(lunar.day);
+        cell.appendChild(lu);
+      }
+      const tip = [];
+      if (holiday) tip.push(holiday);
+      if (showLunar && lunar) tip.push(S.lunarLabel(ymd));
+      items.forEach((o) => tip.push(S.timeLabel(o.event) + ' ' + o.event.title));
+      if (tip.length) cell.title = tip.join('\n');
       cell.addEventListener('click', () => selectDay(ymd));
       cell.addEventListener('dblclick', () => openEditor({ date: ymd }));
       frag.appendChild(cell);
@@ -115,8 +141,22 @@
 
   function renderAgenda() {
     els.agendaTitle.textContent = S.dateLabel(selected) + (selected === today() ? ' · 오늘' : '');
+    const lunarText = S.lunarLabel(selected);
+    if (lunarText) {
+      const sub = document.createElement('span');
+      sub.className = 'agenda-sub';
+      sub.textContent = lunarText;
+      els.agendaTitle.appendChild(sub);
+    }
     const items = S.eventsOn(events, selected);
     els.agendaList.innerHTML = '';
+    const holiday = S.holidayName(selected);
+    if (holiday) {
+      const h = document.createElement('div');
+      h.className = 'ag-holiday';
+      h.textContent = '공휴일 · ' + holiday;
+      els.agendaList.appendChild(h);
+    }
     if (!items.length) {
       const empty = document.createElement('div');
       empty.className = 'empty';
@@ -190,6 +230,8 @@
       });
       els.remind.appendChild(label);
     });
+    for (let m = 1; m <= 12; m++) els.lunarMonth.appendChild(new Option(m + '월', String(m)));
+    for (let d = 1; d <= 30; d++) els.lunarDay.appendChild(new Option(d + '일', String(d)));
     COLORS.forEach((c) => {
       const b = document.createElement('button');
       b.type = 'button';
@@ -245,6 +287,23 @@
 
   function syncRepeat() {
     els.untilRow.hidden = els.repeat.value === 'none';
+    updateLunarHint();
+  }
+
+  // Shows the lunar equivalent of the chosen date, and what a lunar repeat means.
+  function updateLunarHint() {
+    const label = S.parseYmd(els.date.value) ? S.lunarLabel(els.date.value) : '';
+    els.lunarHint.textContent = label && els.repeat.value === 'yearlyLunar' ? label + ' · 매년 같은 음력 날짜에 반복' : label;
+  }
+
+  // Lunar date -> the nearest solar date from today on.
+  function applyLunarInput() {
+    const date = S.nextLunar(Number(els.lunarMonth.value), Number(els.lunarDay.value), els.lunarLeap.checked, today());
+    if (!date) return showError('해당 음력 날짜를 찾지 못했어요. 윤달 여부를 확인해 주세요.');
+    els.error.hidden = true;
+    els.date.value = date;
+    updateLunarHint();
+    els.lunarRow.hidden = true;
   }
 
   function nextHour() {
@@ -276,6 +335,7 @@
     const linkedFolder = folderById(els.folder.value);
     setColor(ev ? ev.color : linkedFolder && COLORS.includes(linkedFolder.color) ? linkedFolder.color : DEFAULT_COLOR);
     syncAllDay();
+    els.lunarRow.hidden = true;
     syncRepeat();
 
     const repeating = !!ev && ev.repeat !== 'none';
@@ -396,6 +456,28 @@
     window.api.setCalendarOnTop(on);
   });
 
+  els.date.addEventListener('change', updateLunarHint);
+  $('lunarOpenBtn').addEventListener('click', () => {
+    const l = S.parseYmd(els.date.value) && S.lunarOf(els.date.value);
+    if (l) {
+      els.lunarMonth.value = String(l.month);
+      els.lunarDay.value = String(l.day);
+      els.lunarLeap.checked = l.leap;
+    }
+    els.lunarRow.hidden = !els.lunarRow.hidden;
+  });
+  $('lunarApplyBtn').addEventListener('click', applyLunarInput);
+  els.lunarBtn.classList.toggle('active', showLunar);
+  els.lunarBtn.addEventListener('click', () => {
+    showLunar = !showLunar;
+    els.lunarBtn.classList.toggle('active', showLunar);
+    try {
+      localStorage.setItem('calShowLunar', showLunar ? '1' : '0');
+    } catch (e) {
+      // not persisted; still applies for this session
+    }
+    renderGrid();
+  });
   els.allDay.addEventListener('change', syncAllDay);
   els.repeat.addEventListener('change', syncRepeat);
   els.folder.addEventListener('change', () => {
