@@ -11,6 +11,9 @@
   let events = [];
   let showingSchedule = false;
   let quickDayOffset = 0;
+  let dock = 'right';
+  let dragging = false;
+  let hoverTimer = null;
   const S = window.Schedule;
 
   const els = {
@@ -45,6 +48,25 @@
 
   function nowIso() {
     return new Date().toISOString();
+  }
+
+  const isHorizontal = () => dock === 'top' || dock === 'bottom';
+
+  function applyDock(next) {
+    dock = ['left', 'top', 'bottom'].includes(next) ? next : 'right';
+    els.widget.classList.remove('dock-left', 'dock-top', 'dock-bottom');
+    if (dock !== 'right') els.widget.classList.add('dock-' + dock);
+  }
+
+  // Along a top/bottom edge the cursor sweeps across the tabs on its way to the
+  // taskbar or the screen edge, so those docks wait a moment before opening.
+  function onTabEnter(fn) {
+    clearTimeout(hoverTimer);
+    if (!isHorizontal() || expanded) { fn(); return; }
+    hoverTimer = setTimeout(fn, 220);
+  }
+  function cancelTabEnter() {
+    clearTimeout(hoverTimer);
   }
 
   let draggedFolderId = null;
@@ -90,7 +112,8 @@
     schedTabEl = document.createElement('div');
     schedTabEl.className = 'tab tab-sched';
     schedTabEl.title = '일정';
-    schedTabEl.addEventListener('mouseenter', showSchedule);
+    schedTabEl.addEventListener('mouseenter', () => onTabEnter(showSchedule));
+    schedTabEl.addEventListener('mouseleave', cancelTabEnter);
     schedTabEl.addEventListener('click', () => window.api.openCalendar({ type: 'show' }));
     updateSchedTab();
     els.tabs.appendChild(schedTabEl);
@@ -102,7 +125,8 @@
       tab.textContent = folder.title;
       tab.title = folder.title;
       tab.draggable = true;
-      tab.addEventListener('mouseenter', () => showFolder(folder.id));
+      tab.addEventListener('mouseenter', () => onTabEnter(() => showFolder(folder.id)));
+      tab.addEventListener('mouseleave', cancelTabEnter);
       tab.addEventListener('click', () => window.api.openFolderInMain(folder.id));
 
       // Tabs double as a reorderable list — native drag-and-drop, not the
@@ -124,7 +148,7 @@
         if (!draggedFolderId || draggedFolderId === folder.id) return;
         e.preventDefault();
         const rect = tab.getBoundingClientRect();
-        const before = (e.clientY - rect.top) < rect.height / 2;
+        const before = isHorizontal() ? (e.clientX - rect.left) < rect.width / 2 : (e.clientY - rect.top) < rect.height / 2;
         tab.classList.toggle('drag-over-top', before);
         tab.classList.toggle('drag-over-bottom', !before);
       });
@@ -588,7 +612,7 @@
   });
 
   els.widget.addEventListener('mouseleave', () => {
-    if (pinned) return;
+    if (pinned || dragging) return;
     clearTimeout(leaveTimer);
     leaveTimer = setTimeout(collapse, 180);
   });
@@ -635,23 +659,38 @@
   els.pinBtn.addEventListener('click', togglePinned);
   els.schedPinBtn.addEventListener('click', togglePinned);
 
-  // ---------- Drag to reposition vertically ----------
+  // ---------- Drag to move / re-dock ----------
 
+  // The main process moves the window to the cursor and snaps it to the nearest
+  // edge on release. Here we only forward "the mouse moved" once per frame while
+  // the button is held, so an idle widget costs nothing.
   [els.dragHandle, els.schedDragHandle].forEach((handle) => {
     handle.addEventListener('mousedown', (e) => {
       e.preventDefault();
-      const onMove = (ev) => {
-        if (ev.movementY) window.api.dragBy(ev.movementY);
+      dragging = true;
+      window.api.dragStart();
+      let frame = 0;
+      const onMove = () => {
+        if (frame) return;
+        frame = requestAnimationFrame(() => {
+          frame = 0;
+          window.api.dragMove();
+        });
       };
       const onUp = () => {
         document.removeEventListener('mousemove', onMove);
         document.removeEventListener('mouseup', onUp);
+        if (frame) cancelAnimationFrame(frame);
+        dragging = false;
         window.api.dragEnd();
       };
       document.addEventListener('mousemove', onMove);
       document.addEventListener('mouseup', onUp);
     });
   });
+
+  window.api.onDock((d) => applyDock(d));
+  window.api.getDock().then(applyDock);
 
   // ---------- Data sync ----------
 

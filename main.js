@@ -25,6 +25,12 @@ const TAB_GAP = 4;
 const ADD_TAB_H = 34;
 const SCHED_TAB_H = 64; // the 일정 tab pinned above the folder tabs
 const MIN_WIDGET_H = 380; // tall enough for the schedule panel's list and quick-add form
+// Horizontal docks (top / bottom): the tab strip lies along the edge, the panel opens away from it.
+const STRIP_H = 34;
+const PANEL_H = 420;
+const H_TAB_W = 92;
+const H_SCHED_TAB_W = 64;
+const DOCKS = ['right', 'left', 'top', 'bottom'];
 const MAX_ATTACHMENT_BYTES = 200 * 1024 * 1024;
 const DONATE_URL = 'https://www.buymeacoffee.com/kdwikorea';
 // Attachments open with the default app, which for these would run them —
@@ -132,7 +138,8 @@ let mainWindow = null;
 let calcWindow = null;
 let widgetWindow = null;
 let tray = null;
-let dragCurrentY = null;
+let dragCurrent = null; // live position while the handle is being dragged: {x, y}
+let dragSession = null; // set between drag-start and drag-end
 let widgetExpanded = false;
 let widgetPinned = false;
 let watchdogTimer = null;
@@ -159,19 +166,31 @@ function computeHeight(wa) {
 // The window never changes size when the panel opens or closes — the slide is
 // a CSS transform inside it (see widget.css). It stays click-through while
 // idle, so the transparent area never blocks the app underneath.
+function currentDock() {
+  return DOCKS.includes(cachedConfig && cachedConfig.dock) ? cachedConfig.dock : 'right';
+}
+
+function computeWidth(wa) {
+  const contentW = H_SCHED_TAB_W + cachedFolderCount * H_TAB_W + ADD_TAB_H + (cachedFolderCount + 3) * TAB_GAP + 16;
+  return Math.min(Math.max(contentW, PANEL_W), wa.width - 24);
+}
+
 function getWidgetBounds() {
   const wa = getTargetDisplay().workArea;
-  const height = computeHeight(wa);
-  let y;
-  if (typeof dragCurrentY === 'number') {
-    y = dragCurrentY;
-  } else if (typeof cachedConfig.y === 'number') {
-    y = cachedConfig.y;
-  } else {
-    y = wa.y + Math.round((wa.height - height) / 2);
+  const dock = currentDock();
+  if (dock === 'top' || dock === 'bottom') {
+    const width = computeWidth(wa);
+    const height = STRIP_H + Math.max(300, Math.min(PANEL_H, wa.height - 24 - STRIP_H));
+    let x = dragCurrent && typeof dragCurrent.x === 'number' ? dragCurrent.x : cachedConfig.x;
+    if (typeof x !== 'number') x = wa.x + (dock === 'bottom' ? 12 : Math.round((wa.width - width) / 2));
+    x = Math.max(wa.x, Math.min(x, wa.x + wa.width - width));
+    return { x, y: dock === 'top' ? wa.y : wa.y + wa.height - height, width, height };
   }
+  const height = computeHeight(wa);
+  let y = dragCurrent && typeof dragCurrent.y === 'number' ? dragCurrent.y : cachedConfig.y;
+  if (typeof y !== 'number') y = wa.y + Math.round((wa.height - height) / 2);
   y = Math.max(wa.y, Math.min(y, wa.y + wa.height - height));
-  return { x: wa.x + wa.width - FULL_W, y, width: FULL_W, height };
+  return { x: dock === 'left' ? wa.x : wa.x + wa.width - FULL_W, y, width: FULL_W, height };
 }
 
 // Moving between monitors with different scaling sometimes lands a few pixels
@@ -214,7 +233,7 @@ function moveToActiveDisplay() {
 function startDisplayWatch() {
   if (displayWatchTimer) return;
   displayWatchTimer = setInterval(() => {
-    if (widgetExpanded || widgetPinned) return;
+    if (widgetExpanded || widgetPinned || dragSession) return;
     const disp = getActiveDisplay();
     if (disp.id !== currentDisplayId) {
       currentDisplayId = disp.id;
@@ -238,7 +257,7 @@ function startDisplayWatch() {
 function startWatchdog() {
   if (watchdogTimer) return;
   watchdogTimer = setInterval(() => {
-    if (!widgetWindow || widgetWindow.isDestroyed() || widgetPinned) return;
+    if (!widgetWindow || widgetWindow.isDestroyed() || widgetPinned || dragSession) return;
     const pt = screen.getCursorScreenPoint();
     // The window is always full width, so its target bounds are the real
     // bounds. (Back when it was resized to reveal the panel, checking the
@@ -417,9 +436,30 @@ function setWidgetVisible(visible) {
 }
 
 function resetWidgetPosition() {
-  dragCurrentY = null;
-  saveConfig({ ...cachedConfig, y: null });
-  refreshWidgetSize();
+  dragCurrent = null;
+  saveConfig({ ...cachedConfig, dock: 'right', x: null, y: null });
+  notifyDock();
+  moveToActiveDisplay();
+  updateTrayMenu();
+}
+
+function notifyDock() {
+  if (widgetWindow && !widgetWindow.isDestroyed()) widgetWindow.webContents.send('widget:dock', currentDock());
+}
+
+// Pick an edge from the tray menu: centred along that edge until dragged.
+function setDock(dock) {
+  if (!DOCKS.includes(dock)) return;
+  dragCurrent = null;
+  saveConfig({ ...cachedConfig, dock, x: null, y: null });
+  notifyDock();
+  forceCollapseUnlessPinned();
+  moveToActiveDisplay();
+  updateTrayMenu();
+}
+
+function forceCollapseUnlessPinned() {
+  if (!widgetPinned) forceCollapse();
 }
 
 // Theme: 'system' follows Windows, otherwise forced. nativeTheme.themeSource
@@ -460,6 +500,15 @@ function updateTrayMenu() {
     {
       label: isVisible ? '위젯 숨기기' : '위젯 보이기',
       click: () => setWidgetVisible(!isVisible),
+    },
+    {
+      label: '위젯 붙이는 곳',
+      submenu: [['right', '오른쪽'], ['left', '왼쪽'], ['top', '위쪽'], ['bottom', '아래쪽']].map(([d, label]) => ({
+        label,
+        type: 'radio',
+        checked: currentDock() === d,
+        click: () => setDock(d),
+      })),
     },
     { label: '위젯 위치 초기화', click: () => resetWidgetPosition() },
     {
@@ -664,19 +713,50 @@ ipcMain.on('widget:set-pinned', (event, pinned) => {
   }
 });
 
-ipcMain.on('widget:drag-by', (event, dy) => {
-  if (!widgetWindow) return;
+ipcMain.handle('widget:get-dock', () => currentDock());
+
+// Dragging the handle moves the whole window freely with the cursor (one
+// setBounds per animation frame, sent from the renderer only while the button
+// is down — nothing polls). Letting go snaps it to the nearest screen edge.
+ipcMain.on('widget:drag-start', () => {
+  if (!widgetWindow || widgetWindow.isDestroyed()) return;
   const b = widgetWindow.getBounds();
-  const wa = getTargetDisplay().workArea;
-  let newY = (dragCurrentY == null ? b.y : dragCurrentY) + dy;
-  newY = Math.max(wa.y, Math.min(newY, wa.y + wa.height - b.height));
-  dragCurrentY = newY;
-  widgetWindow.setBounds({ x: b.x, y: newY, width: b.width, height: b.height });
+  const c = screen.getCursorScreenPoint();
+  dragSession = { gx: c.x - b.x, gy: c.y - b.y, w: b.width, h: b.height };
+});
+
+ipcMain.on('widget:drag-move', () => {
+  if (!dragSession || !widgetWindow || widgetWindow.isDestroyed()) return;
+  const c = screen.getCursorScreenPoint();
+  const d = screen.getDisplayNearestPoint(c).bounds;
+  const x = Math.max(d.x, Math.min(c.x - dragSession.gx, d.x + d.width - dragSession.w));
+  const y = Math.max(d.y, Math.min(c.y - dragSession.gy, d.y + d.height - dragSession.h));
+  widgetWindow.setBounds({ x, y, width: dragSession.w, height: dragSession.h });
 });
 
 ipcMain.on('widget:drag-end', () => {
-  if (dragCurrentY == null) return;
-  saveConfig({ ...cachedConfig, y: dragCurrentY });
+  if (!dragSession) return;
+  dragSession = null;
+  const c = screen.getCursorScreenPoint();
+  const disp = screen.getDisplayNearestPoint(c);
+  const wa = disp.workArea;
+  const dists = {
+    left: c.x - wa.x,
+    right: wa.x + wa.width - c.x,
+    top: c.y - wa.y,
+    bottom: wa.y + wa.height - c.y,
+  };
+  const dock = DOCKS.reduce((best, d) => (dists[d] < dists[best] ? d : best), 'right');
+  currentDisplayId = disp.id;
+  dragCurrent = null;
+  const patch = { dock };
+  if (dock === 'left' || dock === 'right') patch.y = c.y - 24;
+  else patch.x = c.x - Math.round(PANEL_W / 2);
+  saveConfig({ ...cachedConfig, ...patch });
+  notifyDock();
+  forceCollapseUnlessPinned();
+  moveToActiveDisplay();
+  updateTrayMenu();
 });
 
 ipcMain.on('widget:open-folder', (event, id) => openMain(id));

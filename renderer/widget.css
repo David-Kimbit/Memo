@@ -567,3 +567,126 @@ html, body {
 #schedPanel .panel-footer {
   margin-top: 8px;
 }
+
+/* ---------- Dock positions ----------
+   The default above is the right edge. The window is always the same size for a
+   given dock and never resizes while open: every move here is a CSS transform. */
+
+/* left edge: mirror of the right edge */
+#widget.dock-left .tabs {
+  left: 0;
+  right: auto;
+  transform: translateX(-26px);
+}
+#widget.dock-left.open .tabs { transform: translateX(0); }
+#widget.dock-left.arrive .tabs { animation-name: widget-arrive-left; }
+@keyframes widget-arrive-left {
+  from { transform: translateX(-34px); }
+  to { transform: translateX(-26px); }
+}
+#widget.dock-left .tab { border-radius: 0 20px 20px 0; }
+#widget.dock-left .tab-add { border-radius: 0 12px 12px 0; }
+#widget.dock-left .panel {
+  right: auto;
+  left: 34px;
+  border-radius: 0 20px 20px 0;
+  border: 1px solid var(--line);
+  border-left: 0;
+  transform: translateX(-40px) scale(0.98);
+  transform-origin: left center;
+}
+#widget.dock-left .panel.visible { transform: none; }
+
+/* top / bottom edges: the strip lies along the edge, tabs read horizontally */
+#widget.dock-top .tabs,
+#widget.dock-bottom .tabs {
+  left: 0;
+  right: auto;
+  width: 100%;
+  height: 34px;
+  flex-direction: row;
+  gap: 4px;
+  padding: 0 8px;
+}
+#widget.dock-top .tab,
+#widget.dock-bottom .tab {
+  height: 34px;
+  flex: 0 1 92px;
+  min-width: 0;
+  padding: 0 8px;
+  writing-mode: horizontal-tb;
+}
+#widget.dock-top .tab.tab-sched,
+#widget.dock-bottom .tab.tab-sched {
+  height: 34px;
+  flex: 0 0 64px;
+}
+#widget.dock-top .tab-add,
+#widget.dock-bottom .tab-add {
+  flex: 0 0 34px;
+  width: 34px;
+  height: 34px;
+}
+#widget.dock-top .panel,
+#widget.dock-bottom .panel {
+  left: 0;
+  right: auto;
+  width: 300px;
+  height: calc(100% - 34px);
+}
+
+#widget.dock-bottom .tabs {
+  top: auto;
+  bottom: 0;
+  transform: translateY(26px);
+}
+#widget.dock-bottom.open .tabs { transform: translateY(0); }
+#widget.dock-bottom.arrive .tabs { animation-name: widget-arrive-bottom; }
+@keyframes widget-arrive-bottom {
+  from { transform: translateY(34px); }
+  to { transform: translateY(26px); }
+}
+#widget.dock-bottom .tab { border-radius: 12px 12px 0 0; }
+#widget.dock-bottom .tab-add { border-radius: 12px 12px 0 0; }
+#widget.dock-bottom .panel {
+  top: auto;
+  bottom: 34px;
+  border-radius: 20px 20px 0 0;
+  border: 1px solid var(--line);
+  border-bottom: 0;
+  transform: translateY(40px) scale(0.98);
+  transform-origin: center bottom;
+}
+#widget.dock-bottom .panel.visible { transform: none; }
+
+#widget.dock-top .tabs {
+  top: 0;
+  bottom: auto;
+  transform: translateY(-26px);
+}
+#widget.dock-top.open .tabs { transform: translateY(0); }
+#widget.dock-top.arrive .tabs { animation-name: widget-arrive-top; }
+@keyframes widget-arrive-top {
+  from { transform: translateY(-34px); }
+  to { transform: translateY(-26px); }
+}
+#widget.dock-top .tab { border-radius: 0 0 12px 12px; }
+#widget.dock-top .tab-add { border-radius: 0 0 12px 12px; }
+#widget.dock-top .panel {
+  top: 34px;
+  bottom: auto;
+  border-radius: 0 0 20px 20px;
+  border: 1px solid var(--line);
+  border-top: 0;
+  transform: translateY(-40px) scale(0.98);
+  transform-origin: center top;
+}
+#widget.dock-top .panel.visible { transform: none; }
+
+/* drop markers when reordering tabs by dragging them */
+#widget.dock-top .tab.drag-over-top,
+#widget.dock-bottom .tab.drag-over-top { box-shadow: -3px 0 0 0 #FFC94D; }
+#widget.dock-top .tab.drag-over-bottom,
+#widget.dock-bottom .tab.drag-over-bottom { box-shadow: 3px 0 0 0 #FFC94D; }
+#widget.dock-top .tab-count,
+#widget.dock-bottom .tab-count { margin-left: 4px; }
